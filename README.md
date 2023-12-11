@@ -3,7 +3,7 @@
 
 [![Testing](https://github.com/islamelkadi/sso-manager/actions/workflows/testing.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/testing.yaml)
 
-[![Dependency check](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/dependency_review.yml/badge.svg)](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/dependency_review.yml)
+[![Scanning](https://github.com/islamelkadi/sso-manager/actions/workflows/scanning.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/scanning.yaml)
 
 ## Explicit assignment use cases
 - Single Account ID
