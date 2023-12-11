@@ -1,5 +1,5 @@
 
-name: Security Scanning
+name: Scanning
 
 on:
   - push
