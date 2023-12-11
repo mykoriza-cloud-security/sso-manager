@@ -153,4 +153,4 @@ def lambda_handler(event: APIGatewayProxyEvent, context: LambdaContext):
         - statusCode: contains HTTP status code
     """
     logger.info(f"event: {event}")
-    return app.resolve(event, context
+    return app.resolve(event, context)
