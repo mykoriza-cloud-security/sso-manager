@@ -1,9 +1,9 @@
 # aws-cloud-pass
-[![Linting](https://github.com/islamelkadi/sso-manager/actions/workflows/linting.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/linting.yaml)
+[![Linting](https://github.com/mykoriza-cloud-security/sso-manager/actions/workflows/linting.yaml/badge.svg)](https://github.com/mykoriza-cloud-security/sso-manager/actions/workflows/linting.yaml)
 
-[![Testing](https://github.com/islamelkadi/sso-manager/actions/workflows/testing.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/testing.yaml)
+[![Testing](https://github.com/mykoriza-cloud-security/sso-manager/actions/workflows/testing.yaml/badge.svg)](https://github.com/mykoriza-cloud-security/sso-manager/actions/workflows/testing.yaml)
 
-[![Scanning](https://github.com/islamelkadi/sso-manager/actions/workflows/scanning.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/scanning.yaml)
+[![Scanning](https://github.com/mykoriza-cloud-security/sso-manager/actions/workflows/scanning.yaml/badge.svg)](https://github.com/mykoriza-cloud-security/sso-manager/actions/workflows/scanning.yaml)
 
 ## Explicit assignment use cases
 - Single Account ID
