@@ -18,9 +18,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: SCA - Dependency checking
-        uses: actions/dependency-review-action@v3
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:

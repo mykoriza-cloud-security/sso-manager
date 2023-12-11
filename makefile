@@ -67,3 +67,7 @@ deploy: package
 		--force-upload \
 		--parameter-overrides file://cfn/params/main.json \
 		--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+
+# Cleanup
+	@echo "Remove Python Debris"
+	@pyclean . --debris --verbose

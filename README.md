@@ -1,10 +1,9 @@
 # aws-cloud-pass
+[![Linting](https://github.com/islamelkadi/sso-manager/actions/workflows/linting.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/linting.yaml)
 
-[![Automated unit testing](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/unit_tests.yml)
+[![Testing](https://github.com/islamelkadi/sso-manager/actions/workflows/testing.yaml/badge.svg)](https://github.com/islamelkadi/sso-manager/actions/workflows/testing.yaml)
 
 [![Dependency check](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/dependency_review.yml/badge.svg)](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/dependency_review.yml)
-
-[![Linting](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/linting.yaml/badge.svg)](https://github.com/cloud-pass-security/aws-cloud-pass/actions/workflows/linting.yaml)
 
 ## Explicit assignment use cases
 - Single Account ID
