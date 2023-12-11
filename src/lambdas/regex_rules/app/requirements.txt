@@ -1,0 +1,4 @@
+boto3==1.28.84
+moto==4.2.8
+ulid-py==1.1.0
+aws-lambda-powertools[tracer,validation]==2.27.1
