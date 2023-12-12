@@ -203,46 +203,46 @@ class TestPutRegexRules(unittest.TestCase):
                 COMMON_ERROR_MESSAGES["expected_keys"],
             )
 
-    # def test_lambda_handler_incorrect_input_datatype(self) -> None:
-    #     """Test case to test error handling of incorrect datatypes
+    def test_lambda_handler_incorrect_input_datatype(self) -> None:
+        """Test case to test error handling of incorrect datatypes
 
-    #     Operation:
-    #         - PUT /rules/regex with different event bodies containing
-    #             incorrect datatypes
+        Operation:
+            - PUT /rules/regex with different event bodies containing
+                incorrect datatypes
 
-    #     Asserts:
-    #         - HTTP status code is 400
-    #         - HTTP response body is: "Invalid request parameters"
-    #         - Expected returned regex rules list length is 0
-    #         - DDB Item secondary key follows desired regex pattern of "RGX_([a-zA-Z0-9]{26})"
-    #         - DDB Item primary key name is RGX_RULES
-    #         - DDB Item numerical attributes are decimal.Decimal datatype
-    #         - DDB Item contains expected item attributes
-    #     """
-    #     sample_inputs = [{}, [{}, {}, {}], [1, 2, 3], "", "test", None]
-    #     for input_ in sample_inputs:
-    #         # Arrange
-    #         apigw_event_contents = {
-    #             "body": {"regex_rules": input_},
-    #             "path": "/rules/regex",
-    #             "httpMethod": "PUT",
-    #             "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
-    #         }
-    #         apigw_event = APIGatewayProxyEvent(apigw_event_contents)
+        Asserts:
+            - HTTP status code is 400
+            - HTTP response body is: "Invalid request parameters"
+            - Expected returned regex rules list length is 0
+            - DDB Item secondary key follows desired regex pattern of "RGX_([a-zA-Z0-9]{26})"
+            - DDB Item primary key name is RGX_RULES
+            - DDB Item numerical attributes are decimal.Decimal datatype
+            - DDB Item contains expected item attributes
+        """
+        sample_inputs = [{}, [{}, {}, {}], [1, 2, 3], "", "test", None]
+        for input_ in sample_inputs:
+            # Arrange
+            apigw_event_contents = {
+                "body": {"regex_rules": input_},
+                "path": "/rules/regex",
+                "httpMethod": "PUT",
+                "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
+            }
+            apigw_event = APIGatewayProxyEvent(apigw_event_contents)
 
-    #         # Act
-    #         response = lambda_handler(apigw_event, self._lambda_context)
-    #         stored_rules = self._py_ddb.batch_query_items(
-    #             key="RGX_RULES", range_begins_with="RGX_"
-    #         )
+            # Act
+            response = lambda_handler(apigw_event, self._lambda_context)
+            stored_rules = self._py_ddb.batch_query_items(
+                key="RGX_RULES", range_begins_with="RGX_"
+            )
 
-    #         # Assert
-    #         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
-    #         self.assertEqual(
-    #             response["statusCode"], 400, COMMON_ERROR_MESSAGES["http_status_code"]
-    #         )
-    #         self.assertEqual(
-    #             response["body"],
-    #             "Invalid request parameters",
-    #             COMMON_ERROR_MESSAGES["response_message"],
-    #         )
+            # Assert
+            self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
+            self.assertEqual(
+                response["statusCode"], 400, COMMON_ERROR_MESSAGES["http_status_code"]
+            )
+            self.assertEqual(
+                response["body"],
+                "Invalid request parameters",
+                COMMON_ERROR_MESSAGES["response_message"],
+            )

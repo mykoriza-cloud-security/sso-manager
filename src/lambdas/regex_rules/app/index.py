@@ -3,16 +3,14 @@ purpose of assiging permission sets.
 """
 import os
 import ulid  # pylint: disable=E0401
+from pydantic import ValidationError
 from aws_lambda_powertools import Logger, Tracer  # pylint: disable=E0401
 from aws_lambda_powertools.logging import correlation_paths  # pylint: disable=E0401
 from aws_lambda_powertools.utilities.typing import (
     LambdaContext,
 )  # pylint: disable=E0401
 
-# from aws_lambda_powertools.utilities.parser import parse, validator                        # pylint: disable=E0401
-from aws_lambda_powertools.utilities.validation import (
-    SchemaValidationError,
-)  # pylint: disable=E0401
+from aws_lambda_powertools.utilities.parser import parse # pylint: disable=E0401
 from aws_lambda_powertools.utilities.data_classes import (
     event_source,
     APIGatewayProxyEvent,
@@ -28,7 +26,7 @@ from aws_lambda_powertools.event_handler import (
 from cloud_pass.ddb import DDB
 from cloud_pass.utils import recursive_process_dict
 
-# from .schemas import RegexRulesModel
+from .schemas import RegexRulesModel
 
 # Env vars
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
@@ -45,8 +43,8 @@ cp_ddb = DDB(DDB_TABLE_NAME)
 
 
 # Lambda Routes
-@app.exception_handler(SchemaValidationError)
-def incorrect_input_dataype(ex: SchemaValidationError):
+@app.exception_handler(ValidationError)
+def incorrect_input_dataype(ex: ValidationError):
     """Handle invalid request parameters"""
     metadata = {
         "path": app.current_event.path,
@@ -78,7 +76,6 @@ def health_check():
 
 
 @app.put("/rules/regex")
-# @validator("regex_rules")
 @tracer.capture_method
 def put_regex_rules():
     """Lambda function route to store regex rules into DDB table"""
@@ -87,8 +84,9 @@ def put_regex_rules():
         if app.current_event._data.body  # pylint: disable=W0212
         else {}
     )
-    regex_rules = event_body.get("regex_rules", [])
-    parse(model=RegexRulesModel, event=regex_rules)
+    regex_rules: RegexRulesModel = parse(model=RegexRulesModel, event=event_body)
+    print("YESS")
+    print(regex_rules)
     if regex_rules:
         processed_regex_rules = []
         for i, rule in enumerate(regex_rules):
