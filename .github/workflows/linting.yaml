@@ -1,7 +1,9 @@
 name: Linting
 
 on:
-  - push
+  schedule:
+      - cron: "0 3 * * *"
+  pull_request:
 
 jobs:
   lint:

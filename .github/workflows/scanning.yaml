@@ -2,7 +2,9 @@
 name: Scanning
 
 on:
-  - push
+  schedule:
+      - cron: "0 3 * * *"
+  pull_request:
 
 permissions:
   actions: read
