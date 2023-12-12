@@ -88,7 +88,7 @@ def put_regex_rules():
         else {}
     )
     regex_rules = event_body.get("regex_rules", [])
-    # parse(model=RegexRulesModel, event=regex_rules)
+    parse(model=RegexRulesModel, event=regex_rules)
     if regex_rules:
         processed_regex_rules = []
         for i, rule in enumerate(regex_rules):
@@ -125,7 +125,6 @@ def get_regex_rules():
     )
     processed_regex_rules = [recursive_process_dict(x) for x in queried_regex_rules]
     return processed_regex_rules
-
 
 # Lambda handler
 @tracer.capture_lambda_handler

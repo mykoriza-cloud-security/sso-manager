@@ -27,4 +27,3 @@ Input <sso-group-name>:<account-id>
     - throw an error
 3. Else:
     - fetch <sso-group> guid
-

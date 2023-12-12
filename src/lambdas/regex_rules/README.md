@@ -4,7 +4,7 @@ This directory contains the source code for the regex rules engine microservices
 
 - app - Code for the application's Lambda function.
 - events - Invocation events that you can use to invoke the function.
-- tests - Unit tests for the application code. 
+- tests - Unit tests for the application code.
 - template.yaml - A template that defines the application's AWS resources.
 
 ## Use the SAM CLI to build and test locally

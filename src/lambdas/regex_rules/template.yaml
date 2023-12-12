@@ -56,7 +56,7 @@ Resources:
   #         - Ref: AWS::StackName
   #     ResourceQuery:
   #       Type: CLOUDFORMATION_STACK_1_0
-  
+
   # ApplicationInsightsMonitoring:
   #   Type: AWS::ApplicationInsights::Application
   #   Properties:

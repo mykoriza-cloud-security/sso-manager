@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 while getopts ":p:b:h" opt; do
   case ${opt} in
     p )
