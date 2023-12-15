@@ -17,6 +17,7 @@ from aws_lambda_powertools.utilities.data_classes import (
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.event_handler import (
     Response,
+    CORSConfig,
     content_types,
     APIGatewayRestResolver,
 )
@@ -28,13 +29,19 @@ from cloud_pass.utils import recursive_process_dict
 from .schemas import RegexRulesModel
 
 # Env vars
+CORS_MAX_AGE = os.getenv("CORS_MAX_AGE", 300)
+CORS_ALLOW_ORIGIN = os.getenv("CORS_ALLOW_ORIGIN", "*")
+CORS_EXTRA_ORIGINS = os.getenv("CORS_EXTRA_ORIGINS", [])
+CORS_ALLOW_HEADERS = os.getenv("CORS_ALLOW_HEADERS", [])
+CORS_EXPOSE_HEADERS = os.getenv("CORS_EXPOSE_HEADERS", [])
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
 
 # AWS Lambda powertool objects & class instances
 tracer = Tracer(service=TRACER_SERVICE_NAME)
 logger = Logger(service=TRACER_SERVICE_NAME, level="INFO")
-app = APIGatewayRestResolver(enable_validation=True)
+cors_config = CORSConfig(allow_origin=CORS_ALLOW_ORIGIN, extra_origins=CORS_EXTRA_ORIGINS, max_age=CORS_MAX_AGE, allow_headers=CORS_ALLOW_HEADERS, expose_headers=CORS_EXPOSE_HEADERS, )
+app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
 cp_ddb = DDB(DDB_TABLE_NAME)
 
 
@@ -55,7 +62,7 @@ def incorrect_input_dataype(ex: ValidationError):
     )
 
 
-@app.not_found
+@app.not_found()
 @tracer.capture_method
 def handle_not_found_errors(exc: NotFoundError) -> Response:  # pylint: disable=W0613
     """Lambda function route to handle unknown routes"""
