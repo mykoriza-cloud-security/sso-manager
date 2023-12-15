@@ -47,14 +47,14 @@ cp_ddb = DDB(DDB_TABLE_NAME)
 
 # Lambda Routes
 @app.exception_handler(ValidationError)
-def incorrect_input_dataype(ex: ValidationError):
+def incorrect_input_dataype(exc: ValidationError):
     """Handle invalid request parameters"""
     metadata = {
         "path": app.current_event.path,
         "query_strings": app.current_event.query_string_parameters,
         "body": app.current_event.body,
     }
-    logger.error(f"Malformed request: {ex}", extra=metadata)
+    logger.error(f"Malformed request: {exc}", extra=metadata)
     return Response(
         status_code=HTTPStatus.BAD_REQUEST.value,
         content_type=content_types.TEXT_PLAIN,
