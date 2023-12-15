@@ -45,9 +45,6 @@ repos:
       - id: debug-statements
         stages:
           - pre-push
-      - id: detect-aws-credentials
-        stages:
-          - pre-push
       - id: detect-private-key
         stages:
           - pre-push
