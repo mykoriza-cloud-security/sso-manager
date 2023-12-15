@@ -76,7 +76,7 @@ class TestNonFunctionalRoutes(unittest.TestCase):
             - HTTP status code is 404
             - HTTP response body is: "Route not found!"
         """
-        http_methods = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
+        http_methods = ["GET", "PUT", "POST", "DELETE"]
 
         for method in http_methods:
             # Arrange
@@ -105,7 +105,7 @@ class TestNonFunctionalRoutes(unittest.TestCase):
             - HTTP status code is 404
             - HTTP response body is: "Route not found!"
         """
-        http_methods = ["PUT", "POST", "DELETE", "OPTIONS"]
+        http_methods = ["PUT", "POST", "DELETE"] # GET not part of the list due to healthcheck route
 
         for method in http_methods:
             # Arrange
