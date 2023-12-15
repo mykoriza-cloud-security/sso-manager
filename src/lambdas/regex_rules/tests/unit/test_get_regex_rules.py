@@ -5,8 +5,9 @@ import json
 import decimal
 import pathlib
 import unittest
-import moto
+from http import HTTPStatus
 
+import moto
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 # Local package imports
@@ -93,9 +94,7 @@ class TestGetRegexRules(unittest.TestCase):
         response_body = json.loads(response["body"])
 
         # Assert
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
+        self.assertEqual(response["statusCode"], HTTPStatus.OK.value)
         self.assertEqual(
             len(response_body), len(self._ddb_items), COMMON_ERROR_MESSAGES["list_size"]
         )
@@ -144,9 +143,7 @@ class TestGetRegexRules(unittest.TestCase):
         response_body = json.loads(response["body"])
 
         # Assert
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
+        self.assertEqual(response["statusCode"], HTTPStatus.OK.value)
         self.assertEqual(
             len(response_body), len(self._ddb_items), COMMON_ERROR_MESSAGES["list_size"]
         )

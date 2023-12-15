@@ -6,15 +6,15 @@ route not found scenarios
 import json
 import pathlib
 import unittest
-import moto
+from http import HTTPStatus
 
+import moto
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 # Local package imports
 from cloud_pass.ddb import DDB
 from cloud_pass.utils import generate_lambda_context, create_table, delete_table
 from src.lambdas.regex_rules.app.index import lambda_handler
-from .utils import COMMON_ERROR_MESSAGES
 
 # Globals
 DDB_TABLE_NAME = "cloud_pass"
@@ -63,14 +63,8 @@ class TestNonFunctionalRoutes(unittest.TestCase):
         response = lambda_handler(apigw_event, self._lambda_context)
 
         # Assert
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
-        self.assertEqual(
-            json.loads(response["body"]),
-            "Health check!",
-            COMMON_ERROR_MESSAGES["response_message"],
-        )
+        self.assertEqual(response["statusCode"], HTTPStatus.OK.value)
+        self.assertEqual(json.loads(response["body"]), HTTPStatus.OK.phrase)
 
     def test_lambda_handler_route_not_found_wrong_path(self) -> None:
         """Test case for non-existant HTTP route
@@ -98,14 +92,8 @@ class TestNonFunctionalRoutes(unittest.TestCase):
             response = lambda_handler(apigw_event, self._lambda_context)
 
             # Assert
-            self.assertEqual(
-                response["statusCode"], 404, COMMON_ERROR_MESSAGES["http_status_code"]
-            )
-            self.assertEqual(
-                response["body"],
-                "Route not found!",
-                COMMON_ERROR_MESSAGES["response_message"],
-            )
+            self.assertEqual(response["body"], HTTPStatus.NOT_FOUND.phrase)
+            self.assertEqual(response["statusCode"], HTTPStatus.NOT_FOUND.value)
 
     def test_lambda_handler_route_not_found_wrong_http_method(self) -> None:
         """Test case for non-existant HTTP route
@@ -133,11 +121,5 @@ class TestNonFunctionalRoutes(unittest.TestCase):
             response = lambda_handler(apigw_event, self._lambda_context)
 
             # Assert
-            self.assertEqual(
-                response["statusCode"], 404, COMMON_ERROR_MESSAGES["http_status_code"]
-            )
-            self.assertEqual(
-                response["body"],
-                "Route not found!",
-                COMMON_ERROR_MESSAGES["response_message"],
-            )
+            self.assertEqual(response["body"], HTTPStatus.NOT_FOUND.phrase)
+            self.assertEqual(response["statusCode"], HTTPStatus.NOT_FOUND.value)

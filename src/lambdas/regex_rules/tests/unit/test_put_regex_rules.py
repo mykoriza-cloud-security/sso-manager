@@ -5,8 +5,9 @@ import json
 import pathlib
 import decimal
 import unittest
-import moto
+from http import HTTPStatus
 
+import moto
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 # Local package imports
@@ -64,15 +65,9 @@ class TestPutRegexRules(unittest.TestCase):
         )
 
         # Assert
+        self.assertEqual(json.loads(response["body"]), HTTPStatus.NO_CONTENT.phrase)
+        self.assertEqual(response["statusCode"], HTTPStatus.NO_CONTENT.value)
         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
-        self.assertEqual(
-            json.loads(response["body"]),
-            "No input provided",
-            COMMON_ERROR_MESSAGES["response_message"],
-        )
 
     def test_lambda_handler_empty_event_body(self) -> None:
         """Test case to write regex rules with empty event body
@@ -97,15 +92,9 @@ class TestPutRegexRules(unittest.TestCase):
         )
 
         # Assert
+        self.assertEqual(json.loads(response["body"]), HTTPStatus.NO_CONTENT.phrase)
+        self.assertEqual(response["statusCode"], HTTPStatus.NO_CONTENT.value)
         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
-        self.assertEqual(
-            json.loads(response["body"]),
-            "No input provided",
-            COMMON_ERROR_MESSAGES["response_message"],
-        )
 
     def test_lambda_handler_empty_regex_rules(self) -> None:
         """Test case to write regex rules with event body
@@ -135,15 +124,9 @@ class TestPutRegexRules(unittest.TestCase):
         )
 
         # Assert
+        self.assertEqual(json.loads(response["body"]), HTTPStatus.NO_CONTENT.phrase)
+        self.assertEqual(response["statusCode"], HTTPStatus.NO_CONTENT.value)
         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
-        self.assertEqual(
-            json.loads(response["body"]),
-            "No input provided",
-            COMMON_ERROR_MESSAGES["response_message"],
-        )
 
     def test_lambda_handler_eighty_safe_regex_rules(self) -> None:
         """Test case to write regex rules with event body of 80
@@ -171,21 +154,18 @@ class TestPutRegexRules(unittest.TestCase):
 
         # Act
         response = lambda_handler(apigw_event, self._lambda_context)
-        stored_rules = self._py_ddb.batch_query_items(
+        queried_regexes = self._py_ddb.batch_query_items(
             key="RGX_RULES", range_begins_with="RGX_"
         )
 
         # Assert
-        self.assertEqual(len(stored_rules), 80, COMMON_ERROR_MESSAGES["list_size"])
-        self.assertEqual(
-            response["statusCode"], 200, COMMON_ERROR_MESSAGES["http_status_code"]
-        )
+        self.assertEqual(len(queried_regexes), 80, COMMON_ERROR_MESSAGES["list_size"])
+        self.assertEqual(response["statusCode"], HTTPStatus.OK.value)
         self.assertEqual(
             json.loads(response["body"]),
-            "Batch write successul",
-            COMMON_ERROR_MESSAGES["response_message"],
+            HTTPStatus.OK.phrase,
         )
-        for item in stored_rules:
+        for item in queried_regexes:
             self.assertEqual(item["pk"], "RGX_RULES", COMMON_ERROR_MESSAGES["hash_key"])
             self.assertRegex(
                 item["sk"],
@@ -219,7 +199,12 @@ class TestPutRegexRules(unittest.TestCase):
             - DDB Item numerical attributes are decimal.Decimal datatype
             - DDB Item contains expected item attributes
         """
-        sample_inputs = [{}, [{}, {}, {}], [1, 2, 3], "", "test", None]
+        sample_inputs = [
+            [{}, {}, {}],
+            [1, 2, 3],
+            [{"test_1": "1", "test_2": "2"}],
+            "test",
+        ]
         for input_ in sample_inputs:
             # Arrange
             apigw_event_contents = {
@@ -237,12 +222,6 @@ class TestPutRegexRules(unittest.TestCase):
             )
 
             # Assert
+            self.assertEqual(response["body"], HTTPStatus.BAD_REQUEST.phrase)
+            self.assertEqual(response["statusCode"], HTTPStatus.BAD_REQUEST.value)
             self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
-            self.assertEqual(
-                response["statusCode"], 400, COMMON_ERROR_MESSAGES["http_status_code"]
-            )
-            self.assertEqual(
-                response["body"],
-                "Invalid request parameters",
-                COMMON_ERROR_MESSAGES["response_message"],
-            )
