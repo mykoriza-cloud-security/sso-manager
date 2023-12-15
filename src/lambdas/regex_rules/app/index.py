@@ -40,7 +40,13 @@ TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice
 # AWS Lambda powertool objects & class instances
 tracer = Tracer(service=TRACER_SERVICE_NAME)
 logger = Logger(service=TRACER_SERVICE_NAME, level="INFO")
-cors_config = CORSConfig(allow_origin=CORS_ALLOW_ORIGIN, extra_origins=CORS_EXTRA_ORIGINS, max_age=CORS_MAX_AGE, allow_headers=CORS_ALLOW_HEADERS, expose_headers=CORS_EXPOSE_HEADERS, )
+cors_config = CORSConfig(
+    allow_origin=CORS_ALLOW_ORIGIN,
+    extra_origins=CORS_EXTRA_ORIGINS,
+    max_age=CORS_MAX_AGE,
+    allow_headers=CORS_ALLOW_HEADERS,
+    expose_headers=CORS_EXPOSE_HEADERS,
+)
 app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
 cp_ddb = DDB(DDB_TABLE_NAME)
 

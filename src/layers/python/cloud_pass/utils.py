@@ -160,7 +160,3 @@ def delete_table(table_name: str) -> None:
     """
     ddb_client = boto3.client("dynamodb")
     ddb_client.delete_table(TableName=table_name)
-
-
-def set_env_vars() -> None:
-    pass
