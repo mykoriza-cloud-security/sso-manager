@@ -23,7 +23,7 @@ unittest: bootstrap
 	@mkdir ~/.aws || true
 
 	@echo "Setting place AWS region for moto"
-	@echo "[default] \nregion=ca-central-1"
+	@echo "[default] \nregion=ca-central-1" > ~/.aws/config
 
 	@echo "Setting placeholder AWS credentials for moto"
 	@echo "[default] \naws_access_key_id = 123 \naws_secret_access_key = ABC" > ~/.aws/credentials
