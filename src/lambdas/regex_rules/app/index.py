@@ -11,15 +11,20 @@ from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.parser import parse
 from aws_lambda_powertools.utilities.data_classes import (
-    event_source,
     APIGatewayProxyEvent,
+    event_source,
 )
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.event_handler import (
-    Response,
-    CORSConfig,
-    content_types,
     APIGatewayRestResolver,
+    CORSConfig,
+    Response,
+    content_types,
+)
+from aws_lambda_powertools.utilities.idempotency import (
+    DynamoDBPersistenceLayer,
+    IdempotencyConfig,
+    idempotent,
 )
 
 # Local package & layer imports
@@ -35,6 +40,7 @@ CORS_EXTRA_ORIGINS = os.getenv("CORS_EXTRA_ORIGINS", [])
 CORS_ALLOW_HEADERS = os.getenv("CORS_ALLOW_HEADERS", [])
 CORS_EXPOSE_HEADERS = os.getenv("CORS_EXPOSE_HEADERS", [])
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
+IDEMPOTENCY_DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass_idempotency_store")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
 
 # AWS Lambda powertool objects & class instances
@@ -49,6 +55,10 @@ cors_config = CORSConfig(
 )
 app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
 cp_ddb = DDB(DDB_TABLE_NAME)
+idempotency_ddb = DynamoDBPersistenceLayer(IDEMPOTENCY_DDB_TABLE_NAME)
+idempotency_config = IdempotencyConfig(
+    event_key_jmespath="[requestContext.authorizer.user_id, body]",
+)
 
 
 # Lambda Routes
@@ -161,6 +171,7 @@ def get_regex_rules():
     log_event=False,
     correlation_id_path=correlation_paths.API_GATEWAY_REST,
 )
+@idempotent(persistence_store=idempotency_ddb, config=idempotency_config)
 def lambda_handler(event: APIGatewayProxyEvent, context: LambdaContext):
     """Function to create or retrieve regex rules for SSO permission
     set assignments

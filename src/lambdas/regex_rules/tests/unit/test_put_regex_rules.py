@@ -18,6 +18,7 @@ from .utils import COMMON_ERROR_MESSAGES
 
 # Globals
 DDB_TABLE_NAME = "cloud_pass"
+IDEMPOTENCY_DDB_TABLE_NAME = "cloud_pass_idempotency_store"
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
 
 
@@ -32,11 +33,13 @@ class TestPutRegexRules(unittest.TestCase):
         self._py_ddb = DDB(DDB_TABLE_NAME)
         self._expected_keys = ["pk", "sk", "priority", "regex"]
         self._lambda_context = generate_lambda_context()
-        create_table(DDB_TABLE_NAME)
+        create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
+        create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
 
     def tearDown(self) -> None:
         """Delete DDB table after test case execution"""
         delete_table(DDB_TABLE_NAME)
+        delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
     ##############################################
     #        Test Cases - lambda handler         #
@@ -225,3 +228,41 @@ class TestPutRegexRules(unittest.TestCase):
             self.assertEqual(response["body"], HTTPStatus.BAD_REQUEST.phrase)
             self.assertEqual(response["statusCode"], HTTPStatus.BAD_REQUEST.value)
             self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
+
+    def test_lambda_handler_idempotency(self) -> None:
+        """Test case to test idempotency of lambda handler
+
+        Operation:
+            - PUT /rules/regex with different event bodies containing
+                80 safe regex rules
+
+        Asserts:
+            -
+        """
+        # Arrange
+        identity_id = "b4a34c56-7890-4ab6-123c-567890def012"
+        regex_rules = [
+            "^[a-zA-Z0-9]+$",
+            "^\\d{2}-\\d{2}-\\d{4}$",
+            "^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$",
+        ]
+        apigw_event_contents = {
+            "httpMethod": "PUT",
+            "path": "/rules/regex",
+            "body": {"regex_rules": regex_rules},
+            "requestContext": {"authorizer": {"user_id": identity_id}},
+        }
+        apigw_event = APIGatewayProxyEvent(data=apigw_event_contents)
+
+        # Act
+        for _ in range(0, 3):
+            lambda_handler(apigw_event, self._lambda_context)
+
+        queried_regexes = self._py_ddb.batch_query_items(
+            key="RGX_RULES", range_begins_with="RGX_"
+        )
+
+        # Assert
+        self.assertEqual(
+            len(queried_regexes), len(regex_rules), COMMON_ERROR_MESSAGES["list_size"]
+        )

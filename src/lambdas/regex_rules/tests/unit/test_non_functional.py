@@ -18,6 +18,7 @@ from src.lambdas.regex_rules.app.index import lambda_handler
 
 # Globals
 DDB_TABLE_NAME = "cloud_pass"
+IDEMPOTENCY_DDB_TABLE_NAME = "cloud_pass_idempotency_store"
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
 
 
@@ -31,11 +32,13 @@ class TestNonFunctionalRoutes(unittest.TestCase):
         """Create DDB table and lambda context prior to test case execution"""
         self._py_ddb = DDB(DDB_TABLE_NAME)
         self._lambda_context = generate_lambda_context()
-        create_table(DDB_TABLE_NAME)
+        create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
+        create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
 
     def tearDown(self) -> None:
         """Delete DDB table after test case execution"""
         delete_table(DDB_TABLE_NAME)
+        delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
     ##############################################
     #        Test Cases - lambda handler         #

@@ -18,6 +18,7 @@ from .utils import COMMON_ERROR_MESSAGES
 
 # Globals
 DDB_TABLE_NAME = "cloud_pass"
+IDEMPOTENCY_DDB_TABLE_NAME = "cloud_pass_idempotency_store"
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
 
 
@@ -32,12 +33,14 @@ class TestGetRegexRules(unittest.TestCase):
         self._py_ddb = DDB(DDB_TABLE_NAME)
         self._lambda_context = generate_lambda_context()
         self._expected_keys = ["pk", "sk", "priority", "regex"]
-        create_table(DDB_TABLE_NAME)
+        create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
+        create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
         self._write_to_table()
 
     def tearDown(self) -> None:
         """Delete DDB table after test case execution"""
         delete_table(DDB_TABLE_NAME)
+        delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
     def _write_to_table(self) -> None:
         """Writes mock data to DynamoDB table"""

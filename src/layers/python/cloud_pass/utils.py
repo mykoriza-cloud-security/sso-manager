@@ -122,10 +122,15 @@ def generate_lambda_context():
         log_group_name: str = f"/aws/lambda/{function_name}"
         log_stream_name: str = "my-log-stream"
 
+        def get_remaining_time_in_millis(self) -> int:
+            return 5
+
     return LambdaContext()
 
 
-def create_table(table_name: str) -> None:
+def create_table(
+    table_name: str, primary_key: str = "pk", secondary_key: str = ""
+) -> None:
     """Create DDB table
 
     Parameters
@@ -135,16 +140,22 @@ def create_table(table_name: str) -> None:
             name of DynamoDB table
     """
     ddb_client = boto3.client("dynamodb")
+    key_schema = [{"AttributeName": primary_key, "KeyType": "HASH"}]
+    attribute_definitions = [{"AttributeName": primary_key, "AttributeType": "S"}]
+
+    if secondary_key:
+        seconday_key_schema = {"AttributeName": secondary_key, "KeyType": "RANGE"}
+        seconday_attribute_definition = {
+            "AttributeName": secondary_key,
+            "AttributeType": "S",
+        }
+        key_schema.append(seconday_key_schema)
+        attribute_definitions.append(seconday_attribute_definition)
+
     ddb_client.create_table(
         TableName=table_name,
-        KeySchema=[
-            {"AttributeName": "pk", "KeyType": "HASH"},
-            {"AttributeName": "sk", "KeyType": "RANGE"},
-        ],
-        AttributeDefinitions=[
-            {"AttributeName": "pk", "AttributeType": "S"},
-            {"AttributeName": "sk", "AttributeType": "S"},
-        ],
+        KeySchema=key_schema,
+        AttributeDefinitions=attribute_definitions,
         BillingMode="PAY_PER_REQUEST",
     )
 
