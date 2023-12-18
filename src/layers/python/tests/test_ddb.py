@@ -22,7 +22,7 @@ class TestDDB(unittest.TestCase):
         """Creates DDB table, writes sample data to DDB table, and
         lambda context prior to test case execution
         """
-        create_table(DDB_TABLE_NAME)
+        create_table(table_name=DDB_TABLE_NAME, secondary_key="sk")
 
     def tearDown(self) -> None:
         """Delete DDB table after test case execution"""
