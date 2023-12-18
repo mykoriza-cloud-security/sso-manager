@@ -1,4 +1,5 @@
-"""Regex based rules engine for processing regex input for the
+"""
+Regex based rules engine for processing regex input for the
 purpose of assiging permission sets.
 """
 import os
@@ -64,7 +65,9 @@ idempotency_config = IdempotencyConfig(
 # Lambda Routes
 @app.exception_handler(ValidationError)
 def incorrect_input_dataype(exc: ValidationError):
-    """Handle invalid request parameters"""
+    """
+    Handle invalid request parameters
+    """
     metadata = {
         "path": app.current_event.path,
         "query_strings": app.current_event.query_string_parameters,
@@ -81,7 +84,9 @@ def incorrect_input_dataype(exc: ValidationError):
 @app.not_found()
 @tracer.capture_method
 def handle_not_found_errors(exc: NotFoundError) -> Response:  # pylint: disable=W0613
-    """Lambda function route to handle unknown routes"""
+    """
+    Lambda function route to handle unknown routes
+    """
     logger.info(f"Route: {app.current_event.path} Not found")
     return Response(
         status_code=HTTPStatus.NOT_FOUND.value,
@@ -92,7 +97,9 @@ def handle_not_found_errors(exc: NotFoundError) -> Response:  # pylint: disable=
 
 @app.get("/")
 def health_check():
-    """Lambda function route to handle health checks"""
+    """
+    Lambda function route to handle health checks
+    """
     return Response(
         status_code=HTTPStatus.OK.value,
         content_type=content_types.APPLICATION_JSON,
@@ -103,7 +110,9 @@ def health_check():
 @app.put("/rules/regex")
 @tracer.capture_method
 def put_regex_rules():
-    """Lambda function route to store regex rules into DDB table"""
+    """
+    Lambda function route to store regex rules into DDB table
+    """
     event_body = (
         app.current_event._data.body  # pylint: disable=W0212
         if app.current_event._data.body  # pylint: disable=W0212
@@ -140,7 +149,8 @@ def put_regex_rules():
 @app.get("/rules/regex")
 @tracer.capture_method
 def get_regex_rules():
-    """Lambda function route to query regex rules stored in DDB table.
+    """
+    Lambda function route to query regex rules stored in DDB table.
     The regex rules are queried from DDB, then each item's attribute
     datatypes are altered to an acceptal JSONifyable datatype.
 
@@ -171,9 +181,12 @@ def get_regex_rules():
     log_event=False,
     correlation_id_path=correlation_paths.API_GATEWAY_REST,
 )
-@idempotent(persistence_store=idempotency_ddb, config=idempotency_config)
+@idempotent(  # pylint: disable=E1120
+    persistence_store=idempotency_ddb, config=idempotency_config
+)
 def lambda_handler(event: APIGatewayProxyEvent, context: LambdaContext):
-    """Function to create or retrieve regex rules for SSO permission
+    """
+    Function to create or retrieve regex rules for SSO permission
     set assignments
 
     Parameters

@@ -1,4 +1,5 @@
-"""This module contains a Boto3 DynamoDB client to interact with the AWS DynamoDB service
+"""
+This module contains a Boto3 DynamoDB client to interact with the AWS DynamoDB service
 
 This module consists of the following classes:
     - DDB: DynamoDB client to interact with DDB
@@ -11,7 +12,8 @@ from boto3.dynamodb.conditions import Key, Attr
 
 
 class DDB:
-    """Boto3 based DynamoDB client to interact with DDB Database.
+    """
+    Boto3 based DynamoDB client to interact with DDB Database.
 
     This DDB class consists of three class methods:
         - __init__: default constructor to initialize various class variables
@@ -21,7 +23,8 @@ class DDB:
     """
 
     def __init__(self, table_name: str) -> None:
-        """Default constructor, creates a DDB resource object and establishes
+        """
+        Default constructor, creates a DDB resource object and establishes
         a client conection to the DDB table to be interacted with
 
         Parameters
@@ -36,7 +39,8 @@ class DDB:
 
     @beartype.beartype
     def batch_put_items(self, items: list[dict]) -> None:
-        """Boto3 DDB function to batch write list of items to DDB Table
+        """
+        Boto3 DDB function to batch write list of items to DDB Table
 
         Parameters
         ----------
@@ -57,7 +61,8 @@ class DDB:
         filter_expression_value: str = "",
         projection_expression: str = "",
     ) -> list:
-        """Boto3 DDB function to batch write list of items to DDB Table
+        """
+        Boto3 DDB function to batch write list of items to DDB Table
 
         Parameters
         ----------
@@ -113,7 +118,8 @@ class DDB:
         filter_expression: str = "",
         projection_expression: str = "",
     ) -> beartype.typing.Iterator[list]:
-        """Boto3 DDB function to batch write list of items to DDB Table
+        """
+        Boto3 DDB function to batch write list of items to DDB Table
 
         Parameters
         ----------

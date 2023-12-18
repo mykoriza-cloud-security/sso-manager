@@ -1,4 +1,5 @@
-"""Python module consisting of utils functions that are used accross
+"""
+Python module consisting of utils functions that are used accross
 the various python modules in this repo
 """
 import decimal
@@ -12,7 +13,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 def recursive_process_dict(dict_object: dict):
-    """Utils function to recursively parse and process dictionary values
+    """
+    Utils function to recursively parse and process dictionary values
     and adjust item source datatypes into target dataypes
 
     Parameters
@@ -41,7 +43,8 @@ def recursive_process_dict(dict_object: dict):
 
 
 def handle_aws_sso_errors(func):
-    """Decorator functions that acts on or return passed function
+    """
+    Decorator functions that acts on or return passed function
 
     Parameters
     ----------
@@ -89,7 +92,8 @@ def handle_aws_sso_errors(func):
 
 
 def generate_lambda_context():
-    """Utils function to create lambda context object instance
+    """
+    Utils function to create lambda context object instance
 
     Returns
     -------
@@ -99,7 +103,8 @@ def generate_lambda_context():
 
     @dataclasses.dataclass
     class LambdaContext:
-        """Creates an AWS Lambda context class. This class's attributes
+        """
+        Creates an AWS Lambda context class. This class's attributes
         consists of the following mock attributes:
 
             - function_name: str, default: test
@@ -123,6 +128,7 @@ def generate_lambda_context():
         log_stream_name: str = "my-log-stream"
 
         def get_remaining_time_in_millis(self) -> int:
+            """Return mock remaining time in milli seconds for lambda"""
             return 5
 
     return LambdaContext()
@@ -131,7 +137,8 @@ def generate_lambda_context():
 def create_table(
     table_name: str, primary_key: str = "pk", secondary_key: str = ""
 ) -> None:
-    """Create DDB table
+    """
+    Create DDB table
 
     Parameters
     ----------
@@ -161,7 +168,8 @@ def create_table(
 
 
 def delete_table(table_name: str) -> None:
-    """Delete target DDB table
+    """
+    Delete target DDB table
 
     Parameters
     ----------

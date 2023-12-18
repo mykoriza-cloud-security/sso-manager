@@ -1,4 +1,6 @@
-"""Unit tests to test querying regex rules from DDB"""
+"""
+Unit tests to test querying regex rules from DDB
+"""
 
 # Imports
 import json
@@ -24,10 +26,13 @@ CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
 
 @moto.mock_dynamodb
 class TestGetRegexRules(unittest.TestCase):
-    """Class to test querying regex rules from DDB"""
+    """
+    Class to test querying regex rules from DDB
+    """
 
     def setUp(self) -> None:
-        """Creates DDB table, writes sample data to DDB table, and
+        """
+        Creates DDB table, writes sample data to DDB table, and
         lambda context prior to test case execution
         """
         self._py_ddb = DDB(DDB_TABLE_NAME)
@@ -38,12 +43,16 @@ class TestGetRegexRules(unittest.TestCase):
         self._write_to_table()
 
     def tearDown(self) -> None:
-        """Delete DDB table after test case execution"""
+        """
+        Delete DDB table after test case execution
+        """
         delete_table(DDB_TABLE_NAME)
         delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
     def _write_to_table(self) -> None:
-        """Writes mock data to DynamoDB table"""
+        """
+        Writes mock data to DynamoDB table
+        """
         self._ddb_items = [
             {
                 "pk": "RGX_RULES",
@@ -66,12 +75,9 @@ class TestGetRegexRules(unittest.TestCase):
         ]
         self._py_ddb.batch_put_items(self._ddb_items)
 
-    ##############################################
-    #        Test Cases - lambda handler         #
-    ##############################################
-
     def test_lambda_handler_no_event_body(self) -> None:
-        """Test case to query all regex rules
+        """
+        Test case to query all regex rules
 
         Operation:
             - GET /rules/regex with no event body
@@ -118,7 +124,8 @@ class TestGetRegexRules(unittest.TestCase):
             )
 
     def test_lambda_handler_empty_event_body(self) -> None:
-        """Test case to query all regex rules
+        """
+        Test case to query all regex rules
 
         Operation:
             - GET /rules/regex with empty event body

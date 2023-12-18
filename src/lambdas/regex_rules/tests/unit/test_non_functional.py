@@ -1,4 +1,5 @@
-"""Unit test module to test non functional routes such as health checks &
+"""
+Unit test module to test non functional routes such as health checks &
 route not found scenarios
 """
 
@@ -24,28 +25,30 @@ CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
 
 @moto.mock_dynamodb
 class TestNonFunctionalRoutes(unittest.TestCase):
-    """Test cases to test non functional routes such as health checks &
+    """
+    Test cases to test non functional routes such as health checks &
     route not found scenarios
     """
 
     def setUp(self) -> None:
-        """Create DDB table and lambda context prior to test case execution"""
+        """
+        Create DDB table and lambda context prior to test case execution
+        """
         self._py_ddb = DDB(DDB_TABLE_NAME)
         self._lambda_context = generate_lambda_context()
         create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
         create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
 
     def tearDown(self) -> None:
-        """Delete DDB table after test case execution"""
+        """
+        Delete DDB table after test case execution
+        """
         delete_table(DDB_TABLE_NAME)
         delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
-    ##############################################
-    #        Test Cases - lambda handler         #
-    ##############################################
-
     def test_lambda_handler_health_check(self) -> None:
-        """Test case for health check
+        """
+        Test case for health check
 
         Operation:
             Sends HTTP GET request to healthcheck route
@@ -70,7 +73,8 @@ class TestNonFunctionalRoutes(unittest.TestCase):
         self.assertEqual(json.loads(response["body"]), HTTPStatus.OK.phrase)
 
     def test_lambda_handler_route_not_found_wrong_path(self) -> None:
-        """Test case for non-existant HTTP route
+        """
+        Test case for non-existant HTTP route
 
         Operation:
             Sends HTTP requests to an unknown route
@@ -99,7 +103,8 @@ class TestNonFunctionalRoutes(unittest.TestCase):
             self.assertEqual(response["statusCode"], HTTPStatus.NOT_FOUND.value)
 
     def test_lambda_handler_route_not_found_wrong_http_method(self) -> None:
-        """Test case for non-existant HTTP route
+        """
+        Test case for non-existant HTTP route
 
         Operation:
             Sends HTTP requests to an unknown route

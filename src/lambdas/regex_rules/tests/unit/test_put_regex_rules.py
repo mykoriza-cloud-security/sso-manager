@@ -1,4 +1,6 @@
-"""Unit tests to test writing regex rules from DDB"""
+"""
+Unit tests to test writing regex rules from DDB
+"""
 
 # Imports
 import json
@@ -24,10 +26,13 @@ CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
 
 @moto.mock_dynamodb
 class TestPutRegexRules(unittest.TestCase):
-    """Class to test writing regex rules to DDB"""
+    """
+    Class to test writing regex rules to DDB
+    """
 
     def setUp(self) -> None:
-        """Creates DDB table, writes sample data to DDB table, and
+        """
+        Creates DDB table, writes sample data to DDB table, and
         lambda context prior to test case execution
         """
         self._py_ddb = DDB(DDB_TABLE_NAME)
@@ -37,16 +42,15 @@ class TestPutRegexRules(unittest.TestCase):
         create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
 
     def tearDown(self) -> None:
-        """Delete DDB table after test case execution"""
+        """
+        Delete DDB table after test case execution
+        """
         delete_table(DDB_TABLE_NAME)
         delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
-    ##############################################
-    #        Test Cases - lambda handler         #
-    ##############################################
-
     def test_lambda_handler_no_event_body(self) -> None:
-        """Test case to write regex rules
+        """
+        Test case to write regex rules
 
         Operation:
             - PUT /rules/regex
@@ -73,7 +77,8 @@ class TestPutRegexRules(unittest.TestCase):
         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
 
     def test_lambda_handler_empty_event_body(self) -> None:
-        """Test case to write regex rules with empty event body
+        """
+        Test case to write regex rules with empty event body
 
         Operation:
             - PUT /rules/regex with empty event body
@@ -100,7 +105,8 @@ class TestPutRegexRules(unittest.TestCase):
         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
 
     def test_lambda_handler_empty_regex_rules(self) -> None:
-        """Test case to write regex rules with event body
+        """
+        Test case to write regex rules with event body
         containing no regex rules
 
         Operation:
@@ -132,7 +138,8 @@ class TestPutRegexRules(unittest.TestCase):
         self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
 
     def test_lambda_handler_eighty_safe_regex_rules(self) -> None:
-        """Test case to write regex rules with event body of 80
+        """
+        Test case to write regex rules with event body of 80
         safe regex rules
 
         Operation:
@@ -187,7 +194,8 @@ class TestPutRegexRules(unittest.TestCase):
             )
 
     def test_lambda_handler_incorrect_input_datatype(self) -> None:
-        """Test case to test error handling of incorrect datatypes
+        """
+        Test case to test error handling of incorrect datatypes
 
         Operation:
             - PUT /rules/regex with different event bodies containing
@@ -230,7 +238,8 @@ class TestPutRegexRules(unittest.TestCase):
             self.assertEqual(len(stored_rules), 0, COMMON_ERROR_MESSAGES["list_size"])
 
     def test_lambda_handler_idempotency(self) -> None:
-        """Test case to test idempotency of lambda handler
+        """
+        Test case to test idempotency of lambda handler
 
         Operation:
             - PUT /rules/regex with different event bodies containing
