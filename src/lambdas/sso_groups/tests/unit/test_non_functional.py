@@ -12,12 +12,10 @@ import moto
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 # Local package imports
-from cloud_pass.ddb import DDB
 from cloud_pass.utils import generate_lambda_context, create_table, delete_table
-from src.lambdas.regex_rules.app.index import lambda_handler
+from src.lambdas.sso_groups.app.index import lambda_handler
 
 # Globals
-DDB_TABLE_NAME = "cloud_pass"
 IDEMPOTENCY_DDB_TABLE_NAME = "cloud_pass_idempotency_store"
 
 
@@ -32,16 +30,13 @@ class TestNonFunctionalRoutes(unittest.TestCase):
         """
         Create DDB table and lambda context prior to test case execution
         """
-        self._py_ddb = DDB(DDB_TABLE_NAME)
         self._lambda_context = generate_lambda_context()
-        create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
         create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
 
     def tearDown(self) -> None:
         """
         Delete DDB table after test case execution
         """
-        delete_table(DDB_TABLE_NAME)
         delete_table(IDEMPOTENCY_DDB_TABLE_NAME)
 
     def test_lambda_handler_health_check(self) -> None:

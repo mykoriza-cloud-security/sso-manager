@@ -98,6 +98,7 @@ class TestGetRegexRules(unittest.TestCase):
                 "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
             }
         )
+
         # Act
         response = lambda_handler(apigw_event, self._lambda_context)
         response_body = json.loads(response["body"])
