@@ -14,9 +14,9 @@ import boto3
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 # Local package imports
-from cloud_pass.ddb import DDB
-from cloud_pass.sso import SSO
-from cloud_pass.utils import generate_lambda_context, create_table, delete_table
+from src.app.lib.ddb import DDB
+from src.app.lib.sso import SSO
+from src.app.lib.utils import generate_lambda_context, create_table, delete_table
 
 # Globals
 IDENTITY_STORE_ID = "d-1234567890"
@@ -52,11 +52,13 @@ class TestPutSsoAssignments(unittest.TestCase):
         self._py_ids = SSO(IDENTITY_STORE_ID)
         self._lambda_context = generate_lambda_context()
 
-        # Util method executions
-        self._create_sso_groups()
-        self._create_permission_sets()
+        # Class method executions
         self._create_aws_root_organization()
         self._create_aws_accounts()
+        self._create_sso_groups()
+        self._create_permission_sets()
+
+        # Util method executions
         create_table(table_name=IDEMPOTENCY_DDB_TABLE_NAME, primary_key="id")
         create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
 
@@ -83,17 +85,20 @@ class TestPutSsoAssignments(unittest.TestCase):
         for name in permission_set_names:
             self._sso_admin_client.create_permission_set(
                 Name=name,
-                InstanceArn=IDENTITY_STORE_ARN)
+                InstanceArn=IDENTITY_STORE_ARN
+            )
 
     def _create_aws_root_organization(self) -> None:
-        self._organizations_client.create_organization()
+        return self._organizations_client.create_organization()["Organization"]
 
     def _create_aws_organizational_units(self) -> None:
         ou_names = []
+        root_ou = self._organizations_client.describe_organization()
+        root_ou_id = root_ou["Organization"]["Id"]
         for name in ou_names:
             self._organizations_client.create_organizational_unit(
                 Name=name,
-                ParentId=
+                ParentId=root_ou_id
             )
 
     def _create_aws_accounts(self) -> None:
@@ -106,3 +111,11 @@ class TestPutSsoAssignments(unittest.TestCase):
 
     def test(self) -> None:
         pass
+        # permission_set_arns = self._sso_admin_client.list_permission_sets(
+        #     InstanceArn=IDENTITY_STORE_ARN
+        # ).get("PermissionSets")
+        # for arn in permission_set_arns:
+        #     print(self._sso_admin_client.describe_permission_set(
+        #         PermissionSetArn=arn,
+        #         InstanceArn=IDENTITY_STORE_ARN
+        #     ))

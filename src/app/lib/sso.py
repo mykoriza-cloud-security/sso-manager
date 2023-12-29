@@ -3,8 +3,8 @@ Module to interact with the AWS IAM Identity Store service
 """
 import boto3
 
-class SSO:
 
+class SSO:
     def __init__(self, identity_store_id: str) -> None:
         """
         Default constructor method to initialize
@@ -23,7 +23,7 @@ class SSO:
             response = self._identity_store_client.list_groups(
                 IdentityStoreId=self._identity_store_id,
                 MaxResults=max_results,
-                NextToken=next_token
+                NextToken=next_token,
             )
 
             groups = response.get("Groups", [])

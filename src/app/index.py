@@ -118,92 +118,92 @@ def get_sso_groups():
     """
     Get list of SSO groups
     """
-    sso_groups = cp_sso.get_sso_groups()
     return Response(
         status_code=HTTPStatus.OK.value,
         content_type=content_types.APPLICATION_JSON,
-        body=sso_groups,
+        body=cp_sso.get_sso_groups(),
     )
 
 
-@app.put("/sso/assignment")
-@tracer.capture_method
-def put_rbac_sso_assignments():
-    """
-    Lambda function route to create RBAC permission set
-    Assignments.
-    """
+# @app.put("/sso/assignment")
+# @tracer.capture_method
+# def put_rbac_sso_assignments():
+#     """
+#     Lambda function route to create RBAC permission set
+#     Assignments.
+#     """
 
-    sso_groups = cp_sso.get_sso_groups()
-    permission_sets = cp_sso.get_permission_sets()
-    assignment_rules = cp_ddb.batch_query_items()
-
-
-@app.put("/rules/regex")
-@tracer.capture_method
-def put_regex_rules():
-    """
-    Lambda function route to store regex rules into DDB table
-    """
-    event_body = (
-        app.current_event._data.body  # pylint: disable=W0212
-        if app.current_event._data.body  # pylint: disable=W0212
-        else {}
-    )
-
-    regex_rules = event_body.get("regex_rules", [])
-    if regex_rules:
-        regex_rules: RegexRulesModel = parse(
-            model=RegexRulesModel, event=event_body
-        ).regex_rules
-        processed_regex_rules = []
-        for i, rule in enumerate(regex_rules):
-            regex_rules = {}
-            regex_rules["pk"] = "RGX_RULES"  # DDB Hash Key
-            regex_rules["sk"] = f"RGX_{str(ulid.new())}"  # DDB Secondary Key
-            regex_rules["priority"] = i
-            regex_rules["regex"] = rule
-            regex_rules = recursive_process_dict(regex_rules)
-            processed_regex_rules.append(regex_rules)
-        cp_ddb.batch_put_items(processed_regex_rules)
-        return Response(
-            status_code=HTTPStatus.OK.value,
-            content_type=content_types.APPLICATION_JSON,
-            body=HTTPStatus.OK.phrase,
-        )
-    return Response(
-        status_code=HTTPStatus.NO_CONTENT.value,
-        content_type=content_types.APPLICATION_JSON,
-        body=HTTPStatus.NO_CONTENT.phrase,
-    )
+#     sso_groups = cp_sso.get_sso_groups()
+#     permission_sets = cp_sso.get_permission_sets()
+#     assignment_rules = cp_ddb.batch_query_items()
 
 
-@app.get("/rules/regex")
-@tracer.capture_method
-def get_regex_rules():
-    """
-    Lambda function route to query regex rules stored in DDB table.
-    The regex rules are queried from DDB, then each item's attribute
-    datatypes are altered to an acceptal JSONifyable datatype.
+# @app.put("/rules/regex")
+# @tracer.capture_method
+# def put_regex_rules():
+#     """
+#     Lambda function route to store regex rules into DDB table
+#     """
+#     event_body = (
+#         app.current_event._data.body  # pylint: disable=W0212
+#         if app.current_event._data.body  # pylint: disable=W0212
+#         else {}
+#     )
 
-    Returns
-    -------
+#     regex_rules = event_body.get("regex_rules", [])
+#     if regex_rules:
+#         regex_rules: RegexRulesModel = parse(
+#             model=RegexRulesModel, event=event_body
+#         ).regex_rules
+#         processed_regex_rules = []
+#         for i, rule in enumerate(regex_rules):
+#             regex_rules = {}
+#             regex_rules["pk"] = "RGX_RULES"  # DDB Hash Key
+#             regex_rules["sk"] = f"RGX_{str(ulid.new())}"  # DDB Secondary Key
+#             regex_rules["priority"] = i
+#             regex_rules["regex"] = rule
+#             regex_rules = recursive_process_dict(regex_rules)
+#             processed_regex_rules.append(regex_rules)
+#         cp_ddb.batch_put_items(processed_regex_rules)
+#         return Response(
+#             status_code=HTTPStatus.OK.value,
+#             content_type=content_types.APPLICATION_JSON,
+#             body=HTTPStatus.OK.phrase,
+#         )
+#     return Response(
+#         status_code=HTTPStatus.NO_CONTENT.value,
+#         content_type=content_types.APPLICATION_JSON,
+#         body=HTTPStatus.NO_CONTENT.phrase,
+#     )
 
-        - processed_regex_rules: list[dict]
-            list of objects representing queried DynamoDB items
-    """
-    hash_key_name = "RGX_RULES"
-    range_key_prefix = "RGX_"
-    projection_expression = "priority,regex"
-    queried_regex_rules = cp_ddb.batch_query_items(
-        hash_key_name, range_key_prefix, projection_expression
-    )
-    processed_regex_rules = [recursive_process_dict(x) for x in queried_regex_rules]
-    return Response(
-        status_code=HTTPStatus.OK.value,
-        content_type=content_types.APPLICATION_JSON,
-        body=processed_regex_rules,
-    )
+
+# @app.get("/rules/regex")
+# @tracer.capture_method
+# def get_regex_rules():
+#     """
+#     Lambda function route to query regex rules stored in DDB table.
+#     The regex rules are queried from DDB, then each item's attribute
+#     datatypes are altered to an acceptal JSONifyable datatype.
+
+#     Returns
+#     -------
+
+#         - processed_regex_rules: list[dict]
+#             list of objects representing queried DynamoDB items
+#     """
+#     hash_key_name = "RGX_RULES"
+#     range_key_prefix = "RGX_"
+#     projection_expression = "priority,regex"
+#     queried_regex_rules = cp_ddb.batch_query_items(
+#         hash_key_name, range_key_prefix, projection_expression
+#     )
+#     processed_regex_rules = [recursive_process_dict(x) for x in queried_regex_rules]
+#     return Response(
+#         status_code=HTTPStatus.OK.value,
+#         content_type=content_types.APPLICATION_JSON,
+#         body=processed_regex_rules,
+#     )
+
 
 # Lambda handler
 @tracer.capture_lambda_handler
