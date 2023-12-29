@@ -6,6 +6,7 @@ import os
 from http import HTTPStatus
 
 import ulid
+import boto3
 from pydantic import ValidationError
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.logging import correlation_paths
@@ -29,18 +30,21 @@ from aws_lambda_powertools.utilities.idempotency import (
 )
 
 # Local package & layer imports
-from cloud_pass.ddb import DDB
-from cloud_pass.utils import recursive_process_dict
+from .lib.ddb import DDB
+from .lib.sso import SSO
+from .lib.schemas import RegexRulesModel
+from .lib.utils import recursive_process_dict
 
-from .schemas import RegexRulesModel
 
 # Env vars
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION")
 CORS_MAX_AGE = os.getenv("CORS_MAX_AGE", 300)
 CORS_ALLOW_ORIGIN = os.getenv("CORS_ALLOW_ORIGIN", "*")
 CORS_EXTRA_ORIGINS = os.getenv("CORS_EXTRA_ORIGINS", [])
 CORS_ALLOW_HEADERS = os.getenv("CORS_ALLOW_HEADERS", [])
 CORS_EXPOSE_HEADERS = os.getenv("CORS_EXPOSE_HEADERS", [])
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
+IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID", "d-1234567890")
 IDEMPOTENCY_DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass_idempotency_store")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
 
@@ -56,6 +60,7 @@ cors_config = CORSConfig(
 )
 app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
 cp_ddb = DDB(DDB_TABLE_NAME)
+cp_sso = SSO(IDENTITY_STORE_ID)
 idempotency_ddb = DynamoDBPersistenceLayer(IDEMPOTENCY_DDB_TABLE_NAME)
 idempotency_config = IdempotencyConfig(
     event_key_jmespath="[requestContext.authorizer.user_id, body]",
@@ -105,6 +110,33 @@ def health_check():
         content_type=content_types.APPLICATION_JSON,
         body=HTTPStatus.OK.phrase,
     )
+
+
+@app.get("/sso/groups")
+@tracer.capture_method
+def get_sso_groups():
+    """
+    Get list of SSO groups
+    """
+    sso_groups = cp_sso.get_sso_groups()
+    return Response(
+        status_code=HTTPStatus.OK.value,
+        content_type=content_types.APPLICATION_JSON,
+        body=sso_groups,
+    )
+
+
+@app.put("/sso/assignment")
+@tracer.capture_method
+def put_rbac_sso_assignments():
+    """
+    Lambda function route to create RBAC permission set
+    Assignments.
+    """
+
+    sso_groups = cp_sso.get_sso_groups()
+    permission_sets = cp_sso.get_permission_sets()
+    assignment_rules = cp_ddb.batch_query_items()
 
 
 @app.put("/rules/regex")
@@ -172,7 +204,6 @@ def get_regex_rules():
         content_type=content_types.APPLICATION_JSON,
         body=processed_regex_rules,
     )
-
 
 # Lambda handler
 @tracer.capture_lambda_handler
