@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 while getopts ":p:b:h" opt; do
   case ${opt} in
     p )
@@ -23,7 +23,7 @@ if [[ $BUILD_DIR == "" ]]; then
   BUILD_DIR='build'
 fi
 
-for file in $(find "$SEARCH_PATH" -name build.toml -print0 | xargs -0 realpath); do
+for file in $(find "$SEARCH_PATH" -name samconfig.toml -print0 | xargs -0 realpath); do
   path=$(dirname "$file")
   cd "$path" || { echo "Could not change dir to $path"; exit 1; }
   if ! sam build -b ./$BUILD_DIR/ -u --skip-pull-image; then
