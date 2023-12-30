@@ -45,7 +45,9 @@ CORS_ALLOW_HEADERS = os.getenv("CORS_ALLOW_HEADERS", [])
 CORS_EXPOSE_HEADERS = os.getenv("CORS_EXPOSE_HEADERS", [])
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
 IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID", "d-1234567890")
-IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
+IDENTITY_STORE_ARN = os.getenv(
+    "IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId"
+)
 IDEMPOTENCY_DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass_idempotency_store")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
 

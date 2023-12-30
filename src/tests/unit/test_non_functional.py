@@ -28,7 +28,6 @@ class TestNonFunctionalRoutes(unittest.TestCase):
         """
         self._lambda_context = generate_lambda_context()
 
-
     def test_lambda_handler_health_check(self) -> None:
         """
         Test case for health check

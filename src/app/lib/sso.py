@@ -60,7 +60,9 @@ class SSO:
             if pagination_token:
                 list_permission_sets_params["NextToken"] = pagination_token
 
-            response = self._sso_admin_client.list_permission_sets(**list_permission_sets_params)
+            response = self._sso_admin_client.list_permission_sets(
+                **list_permission_sets_params
+            )
             permission_set_arns_chunk = response.get("PermissionSets", [])
             permission_set_arns.extend(permission_set_arns_chunk)
 
