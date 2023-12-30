@@ -16,6 +16,7 @@ from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 # Local package imports
 from src.app.lib.ddb import DDB
 from src.app.lib.sso import SSO
+from src.app.index import lambda_handler
 from src.app.lib.utils import generate_lambda_context, create_table, delete_table
 
 # Globals
@@ -26,6 +27,7 @@ DDB_TABLE_NAME = "cloud_pass"
 IDEMPOTENCY_DDB_TABLE_NAME = "cloud_pass_idempotency_store"
 
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
+
 
 @moto.mock_dynamodb
 @moto.mock_ssoadmin
@@ -49,7 +51,7 @@ class TestPutSsoAssignments(unittest.TestCase):
 
         # Object instances
         self._py_ddb = DDB(DDB_TABLE_NAME)
-        self._py_ids = SSO(IDENTITY_STORE_ID)
+        self._py_ids = SSO(IDENTITY_STORE_ID, IDENTITY_STORE_ARN)
         self._lambda_context = generate_lambda_context()
 
         # Class method executions
@@ -73,19 +75,22 @@ class TestPutSsoAssignments(unittest.TestCase):
         """
         Create SSO groups from list of names provided in JSON docs.
         """
-        sso_group_names = ["AWS_DIGITAL_FORENSICS-SECURITY-AUDIT-Admins", "AWS_INCIDENT_RESPONSE-SECURITY-AUDIT-Admins", "AWS_SECURITY_ANALYTICS-SECURITY-LOGGING-ReadOnly", "AWS_THREAT_INTELLIGENCE-SECURITY-LOGGING-ReadOnly"]
+        sso_group_names = [
+            "AWS_DIGITAL_FORENSICS-SECURITY-AUDIT-Admins",
+            "AWS_INCIDENT_RESPONSE-SECURITY-AUDIT-Admins",
+            "AWS_SECURITY_ANALYTICS-SECURITY-LOGGING-ReadOnly",
+            "AWS_THREAT_INTELLIGENCE-SECURITY-LOGGING-ReadOnly",
+        ]
         for name in sso_group_names:
             self._identity_store_client.create_group(
-                DisplayName=name,
-                IdentityStoreId=IDENTITY_STORE_ID
+                DisplayName=name, IdentityStoreId=IDENTITY_STORE_ID
             )
 
     def _create_permission_sets(self) -> None:
         permission_set_names = ["Admins", "PowerUser", "Security", "ReadOnly"]
         for name in permission_set_names:
             self._sso_admin_client.create_permission_set(
-                Name=name,
-                InstanceArn=IDENTITY_STORE_ARN
+                Name=name, InstanceArn=IDENTITY_STORE_ARN
             )
 
     def _create_aws_root_organization(self) -> None:
@@ -97,25 +102,24 @@ class TestPutSsoAssignments(unittest.TestCase):
         root_ou_id = root_ou["Organization"]["Id"]
         for name in ou_names:
             self._organizations_client.create_organizational_unit(
-                Name=name,
-                ParentId=root_ou_id
+                Name=name, ParentId=root_ou_id
             )
 
     def _create_aws_accounts(self) -> None:
         aws_account_names = ["AUDIT", "LOGGING"]
         for name in aws_account_names:
             self._organizations_client.create_account(
-                AccountName=name,
-                Email=f"testing+{name}@testing.com"
+                AccountName=name, Email=f"testing+{name}@testing.com"
             )
 
     def test(self) -> None:
-        pass
-        # permission_set_arns = self._sso_admin_client.list_permission_sets(
-        #     InstanceArn=IDENTITY_STORE_ARN
-        # ).get("PermissionSets")
-        # for arn in permission_set_arns:
-        #     print(self._sso_admin_client.describe_permission_set(
-        #         PermissionSetArn=arn,
-        #         InstanceArn=IDENTITY_STORE_ARN
-        #     ))
+        apigw_event = APIGatewayProxyEvent(
+            data={
+                "httpMethod": "PUT",
+                "path": "/sso/assignment",
+                "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
+            }
+        )
+
+        # Act
+        response = lambda_handler(apigw_event, self._lambda_context)

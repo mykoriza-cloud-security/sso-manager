@@ -45,6 +45,7 @@ CORS_ALLOW_HEADERS = os.getenv("CORS_ALLOW_HEADERS", [])
 CORS_EXPOSE_HEADERS = os.getenv("CORS_EXPOSE_HEADERS", [])
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
 IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID", "d-1234567890")
+IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
 IDEMPOTENCY_DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass_idempotency_store")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
 
@@ -60,7 +61,7 @@ cors_config = CORSConfig(
 )
 app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
 cp_ddb = DDB(DDB_TABLE_NAME)
-cp_sso = SSO(IDENTITY_STORE_ID)
+cp_sso = SSO(IDENTITY_STORE_ID, IDENTITY_STORE_ARN)
 idempotency_ddb = DynamoDBPersistenceLayer(IDEMPOTENCY_DDB_TABLE_NAME)
 idempotency_config = IdempotencyConfig(
     event_key_jmespath="[requestContext.authorizer.user_id, body]",
@@ -101,6 +102,7 @@ def handle_not_found_errors(exc: NotFoundError) -> Response:  # pylint: disable=
 
 
 @app.get("/")
+@tracer.capture_method
 def health_check():
     """
     Lambda function route to handle health checks
@@ -112,30 +114,20 @@ def health_check():
     )
 
 
-@app.get("/sso/groups")
+@app.put("/sso/assignment")
 @tracer.capture_method
-def get_sso_groups():
+def put_rbac_sso_assignments():
     """
-    Get list of SSO groups
+    Lambda function route to create RBAC permission set
+    Assignments.
     """
-    return Response(
-        status_code=HTTPStatus.OK.value,
-        content_type=content_types.APPLICATION_JSON,
-        body=cp_sso.get_sso_groups(),
-    )
 
+    sso_groups = cp_sso.get_sso_groups()
+    permission_sets = cp_sso.get_permission_sets()
+    # assignment_rules = cp_ddb.batch_query_items()
 
-# @app.put("/sso/assignment")
-# @tracer.capture_method
-# def put_rbac_sso_assignments():
-#     """
-#     Lambda function route to create RBAC permission set
-#     Assignments.
-#     """
-
-#     sso_groups = cp_sso.get_sso_groups()
-#     permission_sets = cp_sso.get_permission_sets()
-#     assignment_rules = cp_ddb.batch_query_items()
+    print("permission_sets")
+    print(permission_sets)
 
 
 # @app.put("/rules/regex")

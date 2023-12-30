@@ -13,9 +13,9 @@ import moto
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 # Local package imports
-from cloud_pass.ddb import DDB
-from cloud_pass.utils import generate_lambda_context, create_table, delete_table
-from src.lambdas.regex_rules.app.index import lambda_handler
+from src.app.lib.ddb import DDB
+from src.app.lib.utils import generate_lambda_context, create_table, delete_table
+from src.app.index import lambda_handler
 from .utils import COMMON_ERROR_MESSAGES
 
 # Globals
