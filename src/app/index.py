@@ -20,22 +20,28 @@ from aws_lambda_powertools.event_handler import (
 )
 
 # Local package & layer imports
+from .lib.org import ORG
 from .lib.ddb import DDB
 from .lib.sso import SSO
-
+from .lib.assignments import SsoAssignments
 
 # Env vars
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
 IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID", "d-1234567890")
 IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
+IMPLICIT_RULES_PK = os.getenv("IMPLICIT_RULES_PK", "IMPLICIT")
+IMPLICIT_RULES_SK_PREFIX = os.getenv("IMPLICIT_RULES_PK", "IMP_")
 
 # AWS Lambda powertool objects & class instances
 tracer = Tracer(service=TRACER_SERVICE_NAME)
 logger = Logger(service=TRACER_SERVICE_NAME, level="INFO")
 app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
+
+cp_org = ORG()
 cp_ddb = DDB(DDB_TABLE_NAME)
 cp_sso = SSO(IDENTITY_STORE_ID, IDENTITY_STORE_ARN)
+cp_assignments = SsoAssignments()
 
 # Lambda Routes
 @app.put("/sso/assignment")
@@ -48,11 +54,14 @@ def put_rbac_sso_assignments():
 
     sso_groups = cp_sso.get_sso_groups()
     permission_sets = cp_sso.get_permission_sets()
-    # assignment_rules = cp_ddb.batch_query_items()
+    active_aws_accounts = cp_org.list_aws_accounts()
+    assignment_rules = cp_ddb.batch_query_items(IMPLICIT_RULES_PK, IMPLICIT_RULES_SK_PREFIX, projection_expression = "rule,type")
 
-    print("permission_sets")
-    print(permission_sets)
-
+    return Response(
+        status_code=HTTPStatus.OK.value,
+        content_type=content_types.APPLICATION_JSON,
+        body=processed_regex_rules,
+    )
 
 # Lambda handler
 @tracer.capture_lambda_handler
