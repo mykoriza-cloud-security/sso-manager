@@ -5,7 +5,6 @@ purpose of assiging permission sets.
 import os
 from http import HTTPStatus
 
-import boto3
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
