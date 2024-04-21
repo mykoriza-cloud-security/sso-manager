@@ -1,0 +1,48 @@
+{
+    "ignore_ous": [],
+    "ignore_accounts": [],
+    "organization_definition": [
+        {
+            "name": "dev",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_dev",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_dev",
+                    "type": "ACCOUNT"
+                }
+            ]
+        },
+        {
+            "name": "test",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_test",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_test",
+                    "type": "ACCOUNT"
+                }
+            ]
+        },
+        {
+            "name": "prod",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_prod",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_prod",
+                    "type": "ACCOUNT"
+                }
+            ]
+        }
+    ]
+}

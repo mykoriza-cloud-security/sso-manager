@@ -3,9 +3,10 @@ This module contains a Boto3 DynamoDB client to interact with the AWS DynamoDB s
 This module consists of the following classes:
     - DDB: DynamoDB client to interact with DDB
 """
-
+import typing
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+
 
 class DDB:
     """
@@ -29,6 +30,7 @@ class DDB:
         self._ddb_table_range_key = "sk"
         self._ddb_resource = boto3.resource("dynamodb")
         self._ddb_table = self._ddb_resource.Table(table_name)
+
 
     def batch_query_items(
         self,
@@ -82,12 +84,13 @@ class DDB:
             if page
         ]
 
+
     def _query_items(
         self,
         key_condition: boto3.dynamodb.conditions.And,
         filter_expression: str = "",
         projection_expression: str = "",
-    ) -> beartype.typing.Iterator[list]:
+    ) -> typing.Iterator[list]:
         """
         Boto3 DDB function to batch write list of items to DDB Table
         Parameters
