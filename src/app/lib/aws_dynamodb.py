@@ -31,7 +31,6 @@ class DDB:
         self._ddb_resource = boto3.resource("dynamodb")
         self._ddb_table = self._ddb_resource.Table(table_name)
 
-
     def batch_query_items(
         self,
         key: str,
@@ -83,7 +82,6 @@ class DDB:
             for item in page
             if page
         ]
-
 
     def _query_items(
         self,

@@ -18,11 +18,12 @@ class AwsOrganizations:
 
         # Paginate (if any) and retrieve all SSO groups
         while True:
-
             if pagination_token:
                 boto3_list_accounts_params["NextToken"] = pagination_token
 
-            response = self._organizations_client.list_accounts(**boto3_list_accounts_params)
+            response = self._organizations_client.list_accounts(
+                **boto3_list_accounts_params
+            )
             aws_accounts = response.get("Accounts", [])
             active_accounts = [x for x in aws_accounts if x["Status"] == "ACTIVE"]
             pagination_token = response.get("NextToken", None)

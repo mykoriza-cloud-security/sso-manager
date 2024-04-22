@@ -11,6 +11,7 @@ import moto
 # Local package imports
 from src.app.lib.aws_dynamodb import DDB
 from src.app.lib.utils import create_table, delete_table
+
 # from .utils import COMMON_ERROR_MESSAGES
 
 # @moto.mock_dynamodb
