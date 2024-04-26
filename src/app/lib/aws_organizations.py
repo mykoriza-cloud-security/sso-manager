@@ -7,29 +7,32 @@ import boto3
 class AwsOrganizations:
     def __init__(self) -> None:
         self._organizations_client = boto3.client("organizations")
+        self._root_ou_id = self._organizations_client.list_roots()["Roots"][0]["Id"]
 
-    def list_aws_accounts(self, max_results: int = 50):
-        """
-        Method to list AWS accounts
-        """
-        active_aws_accounts = []
-        pagination_token = None
-        boto3_list_accounts_params = {"MaxResults": max_results}
 
-        # Paginate (if any) and retrieve all SSO groups
-        while True:
-            if pagination_token:
-                boto3_list_accounts_params["NextToken"] = pagination_token
+    def describe_aws_organizational_unit(self, parent_ou_id: str = "", ou_ignore_list: list = []):
 
-            response = self._organizations_client.list_accounts(
-                **boto3_list_accounts_params
-            )
-            aws_accounts = response.get("Accounts", [])
-            active_accounts = [x for x in aws_accounts if x["Status"] == "ACTIVE"]
-            pagination_token = response.get("NextToken", None)
-            active_aws_accounts.extend(active_accounts)
+        # Get List of all OUs
+        ou_list = []
+        parent_id = parent_ou_id if parent_ou_id else self._root_ou_id
+        boto3_ou_paginator = self._organizations_client.get_paginator("list_children")
+        boto3_ou_iterator  = boto3_ou_paginator.paginate(ParentId = parent_id, ChildType = "ORGANIZATIONAL_UNIT")
+        for page in boto3_ou_iterator:
+            for ou in page["Children"]:
+                if ou["Id"] not in ou_ignore_list:
+                    ou_list.append(ou["Id"])
+                    ou_list.extend(self.describe_aws_organizational_unit(ou["Id"]))
+        
+        # Create map of AWS accounts to OUs
+        ou_accounts_map = {}
+        boto3_accounts_paginator = self._organizations_client.get_paginator("list_accounts_for_parent")
+        for ou_id in ou_list:
+            ou_accounts_map[ou_id] = []
+            boto3_accounts_iterator = boto3_accounts_paginator.paginate(ParentId = ou_id)
+            for page in boto3_accounts_iterator:
+                for account in page["Accounts"]:
+                    if account["Status"] == "ACTIVE":
+                        account_information = {"Id": account["Id"], "Name": account["Name"]}
+                        ou_accounts_map[ou_id].append(account_information)
 
-            if not pagination_token:
-                break
-
-        return active_aws_accounts
+        return ou_accounts_map

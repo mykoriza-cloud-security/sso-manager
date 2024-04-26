@@ -27,6 +27,20 @@
                 {
                     "name": "workload_2_test",
                     "type": "ACCOUNT"
+                },
+                {
+                    "name": "test2",
+                    "type": "ORGANIZATIONAL_UNIT",
+                    "children": [
+                        {
+                            "name": "workload_1_test2",
+                            "type": "ACCOUNT"
+                        },
+                        {
+                            "name": "workload_2_test2",
+                            "type": "ACCOUNT"
+                        }
+                    ]
                 }
             ]
         },

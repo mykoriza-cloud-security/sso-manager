@@ -6,7 +6,8 @@ import json
 import moto
 import boto3
 import pytest
-from pprint import pprint
+
+from src.app.lib.aws_organizations import AwsOrganizations
 
 ################################################
 #                    Fixture                   #
@@ -29,7 +30,7 @@ def organizations_client(set_aws_creds):
     with moto.mock_organizations():
         yield boto3.client("organizations")
 
-@moto.mock_organizations
+
 @pytest.fixture(autouse=True)
 def create_aws_organization(get_organization_map, organizations_client):
     organizations_client.create_organization()
@@ -57,7 +58,7 @@ def create_aws_ous_accounts(
 
         if organization_resource["type"] == "ORGANIZATIONAL_UNIT":
             # Create OU
-            nest_ou_id = organizations_client.create_organizational_unit(
+            nested_ou_id = organizations_client.create_organizational_unit(
                 ParentId=parent_ou_id if parent_ou_id else root_ou_id,
                 Name=organization_resource["name"],
             )["OrganizationalUnit"]["Id"]
@@ -65,7 +66,7 @@ def create_aws_ous_accounts(
             # Recursively setup OU
             if organization_resource["children"]:
                 create_aws_ous_accounts(
-                    organizations_client, organization_resource["children"], root_ou_id, nest_ou_id
+                    organizations_client, organization_resource["children"], root_ou_id, nested_ou_id
                 )
 
         elif organization_resource["type"] == "ACCOUNT":
@@ -81,17 +82,24 @@ def create_aws_ous_accounts(
                 SourceParentId=root_ou_id,
                 DestinationParentId=parent_ou_id,
             )
-    
-    print("GRRRRRR")
-    pprint(organizations_client.list_accounts()["Accounts"])
 
 
-def test_get_active_aws_accounts_include_all_organiational_units(create_aws_organization) -> None:
-    pass
+def test_list_active_aws_accounts_include_all_organiational_units(create_aws_organization) -> None:
+    # Arrange
+    py_aws_organizations = AwsOrganizations()
 
-# # def test_get_active_aws_accounts_exclue_specific_organizational_units(get_organizations_details) -> None:
+    # Act
+    active_aws_accounts_via_class = py_aws_organizations.describe_aws_organizational_unit()
+    active_aws_accounts_via_boto3 = boto3.client("organizations").list_accounts()["Accounts"]
+
+    print(active_aws_accounts_via_class)
+
+    # Arrange
+    # assert len(active_aws_accounts_via_class) == len(active_aws_accounts_via_boto3)    
+
+# # def test_list_active_aws_accounts_exclue_specific_organizational_units(get_organizations_details) -> None:
 # #     pass
 
 # # @moto.mock_organizations
-# # def test_get_active_aws_accounts_filter_suspended(organizations_client, get_organizations_details) -> None:
+# # def test_list_active_aws_accounts_filter_suspended(organizations_client, get_organizations_details) -> None:
 # #     pass
