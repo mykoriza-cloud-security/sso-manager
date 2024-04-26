@@ -13,6 +13,11 @@
                 {
                     "name": "workload_2_dev",
                     "type": "ACCOUNT"
+                },
+                {
+                    "name": "nigg",
+                    "type": "ORGANIZATIONAL_UNIT",
+                    "children": []
                 }
             ]
         },
