@@ -19,7 +19,7 @@ env:
 # Automated Testing
 unittest:
 	@echo "Running unit tests"
-	@pytest -v
+	@pytest -s -v
 
 # Formatting & Linting
 format:
@@ -29,6 +29,7 @@ format:
 	@echo "Running python linter"
 	@pylint ./src/
 
+# Remove cached python folders
 cleanup:
 	@echo "Remove Python Debris"
 	@pyclean . --debris --verbose

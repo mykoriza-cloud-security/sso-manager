@@ -103,6 +103,23 @@ def test_list_active_aws_accounts_include_all_organiational_units(create_aws_org
     assert len(active_aws_accounts_via_class) == len(active_aws_accounts_via_boto3)    
 
 
+def test_list_active_aws_accounts_include_specific_organiational_unit(organizations_client, create_aws_organization, get_organization_map) -> None:
+    # Arrange
+    py_aws_organizations = AwsOrganizations()
+    include_ou_name = "prod"
+
+    # Act
+    root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
+    organizational_units_via_boto3 = boto3.client("organizations").list_organizational_units_for_parent(ParentId=root_ou_id)["OrganizationalUnits"]
+    target_child_ou_id = next((obj["Id"] for obj in organizational_units_via_boto3 if obj["Name"] == include_ou_name))
+    aws_organizations_map = py_aws_organizations.describe_aws_organizational_unit(parent_ou_id=target_child_ou_id)
+
+    active_aws_accounts_via_class = list(itertools.chain(*aws_organizations_map.values()))
+    expected_aws_accounts_via_local_org_map = list(next((obj["children"] for obj in get_organization_map["organization_definition"] if obj["name"] == include_ou_name)))
+
+    # Assert
+    assert len(active_aws_accounts_via_class) == len(expected_aws_accounts_via_local_org_map)
+
 def test_list_active_aws_accounts_exclude_suspended_organizational_unit(organizations_client, create_aws_organization, get_organization_map) -> None:
     # Arrange
     py_aws_organizations = AwsOrganizations()
@@ -115,10 +132,9 @@ def test_list_active_aws_accounts_exclude_suspended_organizational_unit(organiza
     suspended_ou_id = next((obj["Id"] for obj in organizational_units_via_boto3 if obj["Name"] == ignore_ou_name))
     suspended_ou_accounts = list(next((obj["children"] for obj in get_organization_map["organization_definition"] if obj["name"] == ignore_ou_name), []))
     aws_organizations_map = py_aws_organizations.describe_aws_organizational_unit(ou_ignore_list=[suspended_ou_id])
-    print(aws_organizations_map)
 
-    # number_of_active_aws_accounts_via_class = len(list(itertools.chain(*aws_organizations_map.values())))
-    # number_of_active_aws_accounts_via_boto3 = len(boto3.client("organizations").list_accounts()["Accounts"]) - len(suspended_ou_accounts)
+    active_aws_accounts_via_class = list(itertools.chain(*aws_organizations_map.values()))
+    active_aws_accounts_via_boto3 = boto3.client("organizations").list_accounts()["Accounts"]
 
     # Assert
-    # assert number_of_active_aws_accounts_via_class == number_of_active_aws_accounts_via_boto3
+    assert len(active_aws_accounts_via_class) == len(active_aws_accounts_via_boto3) - len(suspended_ou_accounts)
