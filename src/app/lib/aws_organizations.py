@@ -22,6 +22,7 @@ class AwsOrganizations:
                 if ou["Id"] not in ou_ignore_list:
                     ou_list.append(ou["Id"])
                     ou_list.extend(self.describe_aws_organizational_unit(ou["Id"]))
+        ou_list.append(parent_id)
         
         # Create map of AWS accounts to OUs
         ou_accounts_map = {}

@@ -3,6 +3,7 @@ Unit tests to test writing regex rules from DDB
 """
 import os
 import json
+import itertools
 import moto
 import boto3
 import pytest
@@ -44,7 +45,7 @@ def create_aws_organization(get_organization_map, organizations_client):
 ################################################
 
 
-def create_aws_ous_accounts(
+def  create_aws_ous_accounts(
     organizations_client, aws_organization_definitions: list, root_ou_id: str, parent_ou_id: str = ""
 ) -> None:
     """
@@ -84,22 +85,39 @@ def create_aws_ous_accounts(
             )
 
 
+################################################
+#                     Tests                    #
+################################################
+
+
 def test_list_active_aws_accounts_include_all_organiational_units(create_aws_organization) -> None:
     # Arrange
     py_aws_organizations = AwsOrganizations()
 
     # Act
-    active_aws_accounts_via_class = py_aws_organizations.describe_aws_organizational_unit()
+    aws_organizations_map = py_aws_organizations.describe_aws_organizational_unit()
+    active_aws_accounts_via_class = list(itertools.chain(*aws_organizations_map.values()))
     active_aws_accounts_via_boto3 = boto3.client("organizations").list_accounts()["Accounts"]
 
-    print(active_aws_accounts_via_class)
+    # Assert
+    assert len(active_aws_accounts_via_class) == len(active_aws_accounts_via_boto3)    
 
+
+def test_list_active_aws_accounts_exclude_suspended_organizational_unit(organizations_client, create_aws_organization, get_organization_map) -> None:
     # Arrange
-    # assert len(active_aws_accounts_via_class) == len(active_aws_accounts_via_boto3)    
+    py_aws_organizations = AwsOrganizations()
+    ignore_ou_name = "suspended"
 
-# # def test_list_active_aws_accounts_exclue_specific_organizational_units(get_organizations_details) -> None:
-# #     pass
+    # Act
+    root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
+    organizational_units_via_boto3 = organizations_client.list_organizational_units_for_parent(ParentId=root_ou_id)["OrganizationalUnits"]
+    
+    suspended_ou_id = next((obj["Id"] for obj in organizational_units_via_boto3 if obj["Name"] == ignore_ou_name))
+    suspended_ou_accounts = list(next((obj["children"] for obj in get_organization_map["organization_definition"] if obj["name"] == ignore_ou_name), []))
+    aws_organizations_map = py_aws_organizations.describe_aws_organizational_unit(ou_ignore_list=[suspended_ou_id])
 
-# # @moto.mock_organizations
-# # def test_list_active_aws_accounts_filter_suspended(organizations_client, get_organizations_details) -> None:
-# #     pass
+    number_of_active_aws_accounts_via_class = len(list(itertools.chain(*aws_organizations_map.values())))
+    number_of_active_aws_accounts_via_boto3 = len(boto3.client("organizations").list_accounts()["Accounts"]) - len(suspended_ou_accounts)
+
+    # Assert
+    assert number_of_active_aws_accounts_via_class == number_of_active_aws_accounts_via_boto3
