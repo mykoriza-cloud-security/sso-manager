@@ -2,6 +2,7 @@
 Python module consisting of utils functions that are used accross
 the various python modules in this repo
 """
+import uuid
 import decimal
 import logging
 import datetime
@@ -123,7 +124,7 @@ def generate_lambda_context():
             f"arn:aws:lambda:us-east-1:123456789101:function:{function_name}"
         )
         memory_limit_in_mb: int = 256
-        aws_request_id: str = "810d00ae-669c-4100-88dd-334888a04cc2"
+        aws_request_id: str = str(uuid.uuid4())
         log_group_name: str = f"/aws/lambda/{function_name}"
         log_stream_name: str = "my-log-stream"
 
