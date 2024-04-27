@@ -1,0 +1,20 @@
+{
+    "permission_set_definitions": [
+        {
+            "name": "Administration",
+            "description": "Administration permission set"
+        },
+        {
+            "name": "PowerUser",
+            "description": "PowerUser permission set"
+        },
+        {
+            "name": "ReadOnly",
+            "description": "ReadOnly permission set"
+        },
+        {
+            "name": "ViewOnly",
+            "description": "ViewOnly permission set"
+        }
+    ]
+}

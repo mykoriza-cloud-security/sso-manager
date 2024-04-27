@@ -11,7 +11,7 @@ import pytest
 from src.app.lib.aws_organizations import AwsOrganizations
 
 ################################################
-#                    Fixture                   #
+#                   Fixtures                   #
 ################################################
 
 

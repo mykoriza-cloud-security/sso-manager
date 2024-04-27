@@ -3,6 +3,7 @@ Regex based rules engine for processing regex input for the
 purpose of assiging permission sets.
 """
 import os
+import itertools
 from http import HTTPStatus
 
 from aws_lambda_powertools import Logger, Tracer
@@ -14,7 +15,7 @@ from aws_lambda_powertools.utilities.data_classes import EventBridgeEvent, event
 # Local package & layer imports
 from .lib.aws_dynamodb import DDB
 from .lib.aws_organizations import AwsOrganizations
-from .lib.aws_identitycenter import AwsIdentityCenter
+from .lib.aws_identitystore import AwsIdentityStore
 
 # Env vars
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -27,31 +28,28 @@ IMPLICIT_RULES_SK_PREFIX = os.getenv("IMPLICIT_RULES_PK", "IMP_")
 TRACER = Tracer(service=TRACER_SERVICE_NAME)
 LOGGER = Logger(service=TRACER_SERVICE_NAME, level=LOG_LEVEL)
 
-py_org = AwsOrganizations()
-py_sso = AwsIdentityCenter()
+py_aws_organizations = AwsOrganizations()
+py_aws_identitycenter = AwsIdentityStore()
 py_ddb = DDB(DDB_TABLE_NAME)
 
 
 # Lambda Routes
-@TRACER.capture_method
 def put_rbac_sso_assignments():
     """
     Lambda function route to create RBAC permission set
     Assignments.
     """
 
-    sso_groups = py_sso.get_sso_groups()
-    # permission_sets = py_sso.get_permission_sets()
-    # active_aws_accounts = py_org.list_aws_accounts()
+    # Get active AWS accounts
+    aws_organizational_map = py_aws_organizations.describe_aws_organizational_unit()
+    active_aws_accounts = list(itertools.chain(*aws_organizational_map.values()))
+
+    # Get SSO groups & permission sets
+    sso_groups = py_aws_identitycenter.list_sso_groups()
+    permission_sets = py_aws_identitycenter.list_permission_sets()
     # assignment_rules = py_ddb.batch_query_items(
     #     IMPLICIT_RULES_PK, IMPLICIT_RULES_SK_PREFIX, projection_expression="rule,type"
     # )
-
-    return Response(
-        status_code=HTTPStatus.OK.value,
-        content_type=content_types.APPLICATION_JSON,
-        body=sso_groups,
-    )
 
 
 # Lambda handler
@@ -81,4 +79,8 @@ def lambda_handler(event: EventBridgeEvent, context: LambdaContext):
         - statusCode: contains HTTP status code
     """
     # return put_rbac_sso_assignments(event, context)
-    return True
+    return Response(
+        status_code=HTTPStatus.OK.value,
+        content_type=content_types.APPLICATION_JSON,
+        # body=sso_groups,
+    )
