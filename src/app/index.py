@@ -21,16 +21,18 @@ from .lib.aws_identitystore import AwsIdentityStore
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
-IMPLICIT_RULES_PK = os.getenv("IMPLICIT_RULES_PK", "IMPLICIT")
-IMPLICIT_RULES_SK_PREFIX = os.getenv("IMPLICIT_RULES_PK", "IMP_")
+
+ROOT_OU_ID = os.getenv("ROOT_OU_ID", "r-1234")
+IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID", "d-1234567890")
+IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
 
 # AWS Lambda powertool objects & class instances
 TRACER = Tracer(service=TRACER_SERVICE_NAME)
 LOGGER = Logger(service=TRACER_SERVICE_NAME, level=LOG_LEVEL)
 
-py_aws_organizations = AwsOrganizations()
-py_aws_identitycenter = AwsIdentityStore()
 py_ddb = DDB(DDB_TABLE_NAME)
+py_aws_organizations = AwsOrganizations(ROOT_OU_ID)
+py_aws_identitycenter = AwsIdentityStore(IDENTITY_STORE_ID, IDENTITY_STORE_ARN)
 
 
 # Lambda Routes

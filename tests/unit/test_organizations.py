@@ -7,7 +7,7 @@ import itertools
 import moto
 import boto3
 import pytest
-
+from typing import Dict
 from src.app.lib.aws_organizations import AwsOrganizations
 
 ################################################
@@ -16,7 +16,7 @@ from src.app.lib.aws_organizations import AwsOrganizations
 
 
 @pytest.fixture(autouse=True)
-def get_organization_map():
+def get_organization_map() -> Dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     organizations_map_path = os.path.join(cwd, "aws_organizations_details.json")
     with open(organizations_map_path, "r") as fp:
@@ -24,7 +24,7 @@ def get_organization_map():
 
 
 @pytest.fixture(autouse=True)
-def organizations_client(set_aws_creds):
+def organizations_client(set_aws_creds) -> boto3.client:
     """
     Fixture to mock AWS Organizations client
     """
@@ -33,11 +33,12 @@ def organizations_client(set_aws_creds):
 
 
 @pytest.fixture(autouse=True)
-def create_aws_organization(get_organization_map, organizations_client):
+def create_aws_organization(get_organization_map: dict, organizations_client: boto3.client) -> str:
     organizations_client.create_organization()
     root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
     aws_organization_definitions = get_organization_map["organization_definition"]
     create_aws_ous_accounts(organizations_client, aws_organization_definitions, root_ou_id)
+    return root_ou_id
 
 
 ################################################
@@ -45,8 +46,11 @@ def create_aws_organization(get_organization_map, organizations_client):
 ################################################
 
 
-def  create_aws_ous_accounts(
-    organizations_client, aws_organization_definitions: list, root_ou_id: str, parent_ou_id: str = ""
+def create_aws_ous_accounts(
+    organizations_client: boto3.client,
+    aws_organization_definitions: list,
+    root_ou_id: str,
+    parent_ou_id: str = ""
 ) -> None:
     """
     Fixture to setup AWS mock organizations by creating:
@@ -90,9 +94,10 @@ def  create_aws_ous_accounts(
 ################################################
 
 
-def test_list_active_aws_accounts_include_all_organiational_units(create_aws_organization) -> None:
+def test_list_active_aws_accounts_include_all_organiational_units(create_aws_organization: str) -> None:
     # Arrange
-    py_aws_organizations = AwsOrganizations()
+    root_ou_id = create_aws_organization
+    py_aws_organizations = AwsOrganizations(root_ou_id)
 
     # Act
     aws_organizations_map = py_aws_organizations.describe_aws_organizational_unit()
@@ -103,10 +108,15 @@ def test_list_active_aws_accounts_include_all_organiational_units(create_aws_org
     assert len(active_aws_accounts_via_class) == len(active_aws_accounts_via_boto3)    
 
 
-def test_list_active_aws_accounts_include_specific_organiational_unit(organizations_client, create_aws_organization, get_organization_map) -> None:
+def test_list_active_aws_accounts_include_specific_organiational_unit(
+    organizations_client: boto3.client, 
+    create_aws_organization: str,
+    get_organization_map: dict
+) -> None:
     # Arrange
-    py_aws_organizations = AwsOrganizations()
     include_ou_name = "prod"
+    root_ou_id = create_aws_organization
+    py_aws_organizations = AwsOrganizations(root_ou_id)
 
     # Act
     root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
@@ -120,10 +130,16 @@ def test_list_active_aws_accounts_include_specific_organiational_unit(organizati
     # Assert
     assert len(active_aws_accounts_via_class) == len(expected_aws_accounts_via_local_org_map)
 
-def test_list_active_aws_accounts_exclude_suspended_organizational_unit(organizations_client, create_aws_organization, get_organization_map) -> None:
+
+def test_list_active_aws_accounts_exclude_suspended_organizational_unit(
+    organizations_client: boto3.client,
+    create_aws_organization: str,
+    get_organization_map: dict
+) -> None:
     # Arrange
-    py_aws_organizations = AwsOrganizations()
     ignore_ou_name = "suspended"
+    root_ou_id = create_aws_organization
+    py_aws_organizations = AwsOrganizations(root_ou_id)
 
     # Act
     root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
