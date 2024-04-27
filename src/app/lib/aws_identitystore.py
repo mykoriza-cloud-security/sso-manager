@@ -15,10 +15,14 @@ class AwsIdentityStore:
         self._identity_store_arn = identity_store_arn
 
         self._identity_store_client = boto3.client("identitystore")
-        self._sso_groups_pagniator = self._identity_store_client.get_paginator("list_groups")
+        self._sso_groups_pagniator = self._identity_store_client.get_paginator(
+            "list_groups"
+        )
 
         self._sso_admin_client = boto3.client("sso-admin")
-        self._permission_sets_pagniator = self._sso_admin_client.get_paginator("list_permission_sets")
+        self._permission_sets_pagniator = self._sso_admin_client.get_paginator(
+            "list_permission_sets"
+        )
 
     def list_sso_groups(self):
         aws_identitystore_groups_iterator = self._sso_groups_pagniator.paginate(

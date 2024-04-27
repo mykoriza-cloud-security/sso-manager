@@ -18,13 +18,13 @@ from .lib.aws_organizations import AwsOrganizations
 from .lib.aws_identitystore import AwsIdentityStore
 
 # Env vars
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-DDB_TABLE_NAME = os.getenv("TABLE_NAME", "cloud_pass")
-TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME", "regex_rules_microservice")
+LOG_LEVEL = os.getenv("LOG_LEVEL")
+DDB_TABLE_NAME = os.getenv("TABLE_NAME")
+TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME")
 
-ROOT_OU_ID = os.getenv("ROOT_OU_ID", "r-1234")
-IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID", "d-1234567890")
-IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
+ROOT_OU_ID = os.getenv("ROOT_OU_ID")
+IDENTITY_STORE_ID = os.getenv("IDENTITY_STORE_ID")
+IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN")
 
 # AWS Lambda powertool objects & class instances
 TRACER = Tracer(service=TRACER_SERVICE_NAME)

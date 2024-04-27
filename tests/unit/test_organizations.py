@@ -7,7 +7,6 @@ import itertools
 import moto
 import boto3
 import pytest
-from typing import Dict
 from src.app.lib.aws_organizations import AwsOrganizations
 
 ################################################
@@ -16,7 +15,7 @@ from src.app.lib.aws_organizations import AwsOrganizations
 
 
 @pytest.fixture(autouse=True)
-def get_organization_map() -> Dict:
+def get_organization_map() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     organizations_map_path = os.path.join(cwd, "aws_organizations_details.json")
     with open(organizations_map_path, "r") as fp:
@@ -48,7 +47,7 @@ def create_aws_organization(get_organization_map: dict, organizations_client: bo
 
 def create_aws_ous_accounts(
     organizations_client: boto3.client,
-    aws_organization_definitions: list,
+    aws_organization_definitions: list[dict],
     root_ou_id: str,
     parent_ou_id: str = ""
 ) -> None:
@@ -92,6 +91,12 @@ def create_aws_ous_accounts(
 ################################################
 #                     Tests                    #
 ################################################
+
+
+def test_missing_constructor_parameter() -> None:
+    # Arrange
+    with pytest.raises(TypeError):
+        AwsOrganizations()
 
 
 def test_list_active_aws_accounts_include_all_organiational_units(create_aws_organization: str) -> None:

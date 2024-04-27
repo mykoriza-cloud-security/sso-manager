@@ -6,7 +6,7 @@ import json
 import moto
 import boto3
 import pytest
-from typing import NoReturn, Dict
+from typing import NoReturn
 from src.app.lib.aws_identitystore import AwsIdentityStore
 
 
@@ -39,7 +39,7 @@ def identity_store_client(set_aws_creds) -> boto3.client:
 
 
 @pytest.fixture(autouse=True)
-def sso_groups_definitions() -> Dict:
+def sso_groups_definitions() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     sso_groups_definitions_path = os.path.join(cwd, "aws_sso_groups_details.json")
     with open(sso_groups_definitions_path, "r") as fp:
@@ -47,7 +47,7 @@ def sso_groups_definitions() -> Dict:
 
 
 @pytest.fixture(autouse=True)
-def permission_set_definitions() -> Dict:
+def permission_set_definitions() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     permission_set_definitions_path = os.path.join(cwd, "aws_permission_set_details.json")
     with open(permission_set_definitions_path, "r") as fp:
@@ -82,6 +82,30 @@ def create_permission_sets(permission_set_definitions: dict, sso_admin_client: b
 ################################################
 #                     Tests                    #
 ################################################
+
+
+def test_missing_constructor_identity_store_id_parameter() -> None:
+    # Arrange
+    identity_store_arn = os.getenv("IDENTITY_STORE_ARN")
+
+    # Assert
+    with pytest.raises(TypeError):
+        AwsIdentityStore(identity_store_arn=identity_store_arn)
+
+
+def test_missing_constructor_identity_store_arn_parameter() -> None:
+    # Arrange
+    identity_store_id = os.getenv("IDENTITY_STORE_ID")
+
+    # Assert
+    with pytest.raises(TypeError):
+        AwsIdentityStore(identity_store_id=identity_store_id)
+
+
+def test_missing_constructor_parameters() -> None:
+    # Assert
+    with pytest.raises(TypeError):
+        AwsIdentityStore()
 
 
 def test_list_sso_groups(sso_groups_definitions: dict, create_sso_groups: NoReturn) -> None:
