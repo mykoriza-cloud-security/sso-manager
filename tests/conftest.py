@@ -18,7 +18,6 @@ def set_aws_creds():
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "test")
     yield
 
-
 @pytest.fixture(scope="session", autouse=True)
 def setup_env_vars():
     monkeypatch = pytest.MonkeyPatch()
@@ -27,7 +26,6 @@ def setup_env_vars():
     monkeypatch.setenv("IDENTITY_STORE_ID", "d-1234567890")
     monkeypatch.setenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
     yield
-
 
 @pytest.fixture(autouse=True)
 def context():
@@ -89,7 +87,6 @@ def load_organization_definition() -> dict:
     with open(organizations_map_path, "r") as fp:
         return json.load(fp)
 
-
 @pytest.fixture(scope="session")
 def organizations_client() -> boto3.client:
     """
@@ -97,7 +94,6 @@ def organizations_client() -> boto3.client:
     """
     with moto.mock_organizations():
         yield boto3.client("organizations")
-
 
 @pytest.fixture(scope="session")
 def setup_aws_organization(load_organization_definition, organizations_client) -> dict:
@@ -153,7 +149,6 @@ def load_permission_sets_definitions() -> dict:
     with open(load_permission_sets_definitions_path, "r") as fp:
         return json.load(fp)
 
-
 @pytest.fixture(scope="session")
 def setup_identity_store(
     identity_store_client: boto3.client,
@@ -186,3 +181,7 @@ def setup_identity_store(
         "sso_groups_definitions": load_sso_groups_definitions["sso_groups_definitions"],
         "permission_sets_definitions": load_permission_sets_definitions["permission_sets_definitions"]
     }
+
+################################################
+#              Fixtures - DynamoDB             #
+################################################
