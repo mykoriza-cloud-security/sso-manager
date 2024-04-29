@@ -23,7 +23,7 @@ def get_organization_map() -> dict:
 
 
 @pytest.fixture(autouse=True)
-def organizations_client(set_aws_creds) -> boto3.client:
+def organizations_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
     """

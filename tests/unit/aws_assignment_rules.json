@@ -1,0 +1,14 @@
+{
+    "rbac_definitions": [
+        {
+            "pk": "IMPLICIT",
+            "rule": "^(?P<path>.*): ((?P<virus>.+) )?(?P<status>(FOUND|OK|ERROR))$",
+            "rule_type": "REGEX"
+        },
+        {
+            "pk": "IMPLICIT",
+            "rule": "[^i*&2@]",
+            "rule_type": "REGEX"
+        }
+    ]
+}

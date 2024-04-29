@@ -16,7 +16,7 @@ from src.app.lib.aws_identitystore import AwsIdentityStore
 
 
 @pytest.fixture(autouse=True)
-def sso_admin_client(set_aws_creds) -> boto3.client:
+def sso_admin_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
     """
@@ -25,7 +25,7 @@ def sso_admin_client(set_aws_creds) -> boto3.client:
 
 
 @pytest.fixture(autouse=True)
-def identity_store_client(set_aws_creds) -> boto3.client:
+def identity_store_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
     """

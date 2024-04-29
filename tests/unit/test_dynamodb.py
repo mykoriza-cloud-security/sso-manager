@@ -3,111 +3,75 @@ Unit tests to test querying regex rules from DDB
 """
 
 # Imports
+import os
 import json
-import decimal
-from http import HTTPStatus
+import ulid
 import moto
+import boto3
+import pytest
 
 # Local package imports
 from src.app.lib.aws_dynamodb import DDB
-from src.app.lib.utils import create_table, delete_table
+from .utils import create_table, delete_table
 
-# from .utils import COMMON_ERROR_MESSAGES
+################################################
+#                   Fixtures                   #
+################################################
 
-# @moto.mock_dynamodb
-# class TestGetRegexRules():
-#     """
-#     Class to test querying regex rules from DDB
-#     """
 
-#     def setUp(self) -> None:
-#         """
-#         Creates DDB table, writes sample data to DDB table, and
-#         lambda context prior to test case execution
-#         """
-#         self._py_ddb = DDB(DDB_TABLE_NAME)
-#         self._lambda_context = generate_lambda_context()
-#         self._expected_keys = ["pk", "sk", "priority", "regex"]
-#         create_table(table_name=DDB_TABLE_NAME, primary_key="pk", secondary_key="sk")
-#         self._write_to_table()
+@pytest.fixture(autouse=True)
+def get_assignment_rules() -> dict:
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    organizations_map_path = os.path.join(cwd, "aws_assignment_rules.json")
+    with open(organizations_map_path, "r") as fp:
+        return json.load(fp)
 
-#     def tearDown(self) -> None:
-#         """
-#         Delete DDB table after test case execution
-#         """
-#         delete_table(DDB_TABLE_NAME)
 
-#     def _write_to_table(self) -> None:
-#         """
-#         Writes mock data to DynamoDB table
-#         """
-#         self._ddb_items = [
-#             {
-#                 "pk": "RGX_RULES",
-#                 "sk": "RGX_01HF5GJM3C5DVC3A2R01J4959Z",
-#                 "priority": decimal.Decimal(0),
-#                 "regex": r"\d+(\.\d\d)?",
-#             },
-#             {
-#                 "pk": "RGX_RULES",
-#                 "sk": "RGX_01HF5GMZ4WHVEZAFZT6F71VC1G",
-#                 "priority": decimal.Decimal(1),
-#                 "regex": r"[^i*&2@]",
-#             },
-#             {
-#                 "pk": "RGX_RULES",
-#                 "sk": "RGX_01HF5GN552ERSEH92WVRSR3GXQ",
-#                 "priority": decimal.Decimal(2),
-#                 "regex": r"//[^\r\n]*[\r\n]",
-#             },
-#         ]
-#         self._py_ddb.batch_put_items(self._ddb_items)
+@pytest.fixture(autouse=True)
+def dynamodb_client():
+    """
+    Fixture to mock DynamoDB
+    """
+    with moto.mock_dynamodb():
+        yield boto3.resource("dynamodb")
 
-#     # def test_lambda_handler_no_event_body(self) -> None:
-#     #     """
-#     #     Test case to query all regex rules
 
-#     #     Operation:
-#     #         - GET /rules/regex with no event body
+@pytest.fixture(autouse=True)
+def setup_ddb_table(get_assignment_rules: dict, dynamodb_client: boto3.resource):
+    """
+    Fixture to create DynamoDB table
+    """
+    ddb_table_name = os.getenv("DDB_TABLE_NAME")
+    create_table(table_name=ddb_table_name, primary_key="pk", secondary_key="sk")
+    
+    # Write data to table
+    ddb_table = boto3.resource("dynamodb").Table(ddb_table_name)
+    for item in get_assignment_rules["rbac_definitions"]:
+        item["sk"] = f"{item['pk']}_{str(ulid.new())}"
+        ddb_table.put_item(Item=item)
 
-#     #     Asserts:
-#     #         - HTTP status code is 200
-#     #         - Expected returned regex rules list length is 3
-#     #         - DDB Item secondary key follows desired regex pattern of "RGX_([a-zA-Z0-9]{26})"
-#     #         - DDB Item primary key name is RGX_RULES
-#     #         - DDB Item numerical attributes are float datatype
-#     #         - DDB Item contains expected item attributes
-#     #     """
-#     #     # Arrange
-#     #     apigw_event = APIGatewayProxyEvent(
-#     #         data={
-#     #             "path": "/rules/regex",
-#     #             "httpMethod": "GET",
-#     #             "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
-#     #         }
-#     #     )
 
-#     #     # Act
-#     #     response = lambda_handler(apigw_event, self._lambda_context)
-#     #     response_body = json.loads(response["body"])
+################################################
+#                     Tests                    #
+################################################
 
-#     #     # Assert
-#     #     self.assertEqual(response["statusCode"], HTTPStatus.OK.value)
-#     #     self.assertEqual(
-#     #         len(response_body), len(self._ddb_items), COMMON_ERROR_MESSAGES["list_size"]
-#     #     )
-#     #     for item in response_body:
-#     #         self.assertEqual(item["pk"], "RGX_RULES", COMMON_ERROR_MESSAGES["hash_key"])
-#     #         self.assertIsInstance(
-#     #             item["priority"], float, COMMON_ERROR_MESSAGES["ddb_numerical"]
-#     #         )
-#     #         self.assertCountEqual(
-#     #             self._expected_keys,
-#     #             list(item.keys()),
-#     #             COMMON_ERROR_MESSAGES["expected_keys"],
-#     #         )
-#     #         self.assertRegex(
-#     #             item["sk"],
-#     #             r"RGX_([a-zA-Z0-9]{26})",
-#     #             COMMON_ERROR_MESSAGES["regex_pattern"],
-#     #         )
+
+def test_missing_constructor_parameter() -> None:
+    # Arrange
+    with pytest.raises(TypeError):
+        DDB()
+
+
+def test_list_implicit_assignment_rules(get_assignment_rules: dict, dynamodb_client: boto3.resource):
+
+    # Arrange
+    ddb_table_name = os.getenv("DDB_TABLE_NAME")
+    py_ddb = DDB(ddb_table_name)
+
+    # Act
+    quried_rules = py_ddb.batch_query_items(key = "IMPLICIT", range_begins_with="IMPLICIT_")
+
+    # Assert
+    assert len(quried_rules) == len(get_assignment_rules["rbac_definitions"])
+    for rule in quried_rules:
+        assert rule["rule_type"] == "REGEX"
