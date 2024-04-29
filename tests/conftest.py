@@ -27,7 +27,7 @@ def setup_env_vars(monkeypatch):
     yield
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True)
 def context():
     return generate_lambda_context()
 
@@ -80,7 +80,7 @@ def create_aws_ous_accounts(
             )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def load_organization_definition() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     organizations_map_path = os.path.join(cwd, "./configs/aws_organizations_details.json")
@@ -88,7 +88,7 @@ def load_organization_definition() -> dict:
         return json.load(fp)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def organizations_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
@@ -97,7 +97,7 @@ def organizations_client() -> boto3.client:
         yield boto3.client("organizations")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def setup_aws_organization(load_organization_definition, organizations_client) -> dict:
 
     # Create AWS organization
@@ -121,7 +121,7 @@ def setup_aws_organization(load_organization_definition, organizations_client) -
 ################################################
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def identity_store_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
@@ -129,7 +129,7 @@ def identity_store_client() -> boto3.client:
     with moto.mock_identitystore():
         yield boto3.client("identitystore")
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def sso_admin_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
@@ -137,14 +137,14 @@ def sso_admin_client() -> boto3.client:
     with moto.mock_ssoadmin():
         yield boto3.client("sso-admin")
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def load_sso_groups_definitions() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     load_sso_groups_definitions_path = os.path.join(cwd, "./configs/aws_sso_groups_details.json")
     with open(load_sso_groups_definitions_path, "r") as fp:
         return json.load(fp)
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def load_permission_sets_definitions() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     load_permission_sets_definitions_path = os.path.join(cwd, "./configs/aws_permission_set_details.json")
@@ -152,7 +152,7 @@ def load_permission_sets_definitions() -> dict:
         return json.load(fp)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def setup_identity_store(
     identity_store_client: boto3.client,
     sso_admin_client: boto3.client,
@@ -161,7 +161,7 @@ def setup_identity_store(
 ):
 
     identity_store_id = os.getenv("IDENTITY_STORE_ID")
-    for group in load_sso_groups_definitions["group_definitions"]:
+    for group in load_sso_groups_definitions["sso_groups_definitions"]:
         identity_store_client.create_group(
             IdentityStoreId=identity_store_id,
             DisplayName=group["name"],
@@ -169,7 +169,7 @@ def setup_identity_store(
         )
 
     identity_store_arn = os.getenv("IDENTITY_STORE_ARN")
-    for permission_set in load_permission_sets_definitions["load_permission_sets_definitions"]:
+    for permission_set in load_permission_sets_definitions["permission_sets_definitions"]:
         sso_admin_client.create_permission_set(
             InstanceArn=identity_store_arn,
             Name=permission_set["name"],
@@ -179,6 +179,6 @@ def setup_identity_store(
     return {
         "identity_store_client": identity_store_client,
         "sso_admin_client": sso_admin_client,
-        "sso_groups_definitions": load_sso_groups_definitions,
-        "permission_sets_definitions": load_permission_sets_definitions
+        "sso_groups_definitions": load_sso_groups_definitions["sso_groups_definitions"],
+        "permission_sets_definitions": load_permission_sets_definitions["permission_sets_definitions"]
     }
