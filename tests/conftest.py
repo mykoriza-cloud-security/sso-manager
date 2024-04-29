@@ -80,7 +80,7 @@ def create_aws_ous_accounts(
             )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def load_organization_definition() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     organizations_map_path = os.path.join(cwd, "./configs/aws_organizations_details.json")
@@ -88,7 +88,7 @@ def load_organization_definition() -> dict:
         return json.load(fp)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def organizations_client() -> boto3.client:
     """
     Fixture to mock AWS Organizations client
@@ -97,7 +97,7 @@ def organizations_client() -> boto3.client:
         yield boto3.client("organizations")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def setup_aws_organization(load_organization_definition, organizations_client) -> dict:
 
     # Create AWS organization
