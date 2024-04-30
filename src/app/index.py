@@ -19,7 +19,7 @@ from .lib.aws_identitystore import AwsIdentityStore
 
 # Env vars
 LOG_LEVEL = os.getenv("LOG_LEVEL")
-DDB_TABLE_NAME = os.getenv("TABLE_NAME")
+DDB_TABLE_NAME = os.getenv("DDB_TABLE_NAME")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME")
 
 ROOT_OU_ID = os.getenv("ROOT_OU_ID")
@@ -49,9 +49,14 @@ def put_rbac_sso_assignments():
     # Get SSO groups & permission sets
     sso_groups = py_aws_identitycenter.list_sso_groups()
     permission_sets = py_aws_identitycenter.list_permission_sets()
-    # assignment_rules = py_ddb.batch_query_items(
-    #     IMPLICIT_RULES_PK, IMPLICIT_RULES_SK_PREFIX, projection_expression="rule,type"
-    # )
+    assignment_rules = py_ddb.batch_query_items(key = "IMPLICIT", range_begins_with="IMPLICIT_")
+
+    return {
+        "active_aws_accounts": active_aws_accounts,
+        "sso_groups": sso_groups,
+        "permission_sets": permission_sets,
+        "assignment_rules": assignment_rules,
+    }
 
 
 # Lambda handler
@@ -80,9 +85,9 @@ def lambda_handler(event: EventBridgeEvent, context: LambdaContext):
         - body: contains stringified response of lambda function
         - statusCode: contains HTTP status code
     """
-    # return put_rbac_sso_assignments(event, context)
+    # return 
     return Response(
         status_code=HTTPStatus.OK.value,
         content_type=content_types.APPLICATION_JSON,
-        # body=sso_groups,
+        body=put_rbac_sso_assignments(),
     )

@@ -6,7 +6,6 @@ import boto3
 import pytest
 
 from tests.unit.utils import create_table
-from src.app.lib.utils import generate_lambda_context
 
 ################################################
 #         Fixtures - AWS Env & Env Vars        #
@@ -30,15 +29,9 @@ def setup_env_vars():
     monkeypatch.setenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
     yield
 
-@pytest.fixture(autouse=True)
-def context():
-    return generate_lambda_context()
-
-
 ################################################
 #         Fixtures - AWS organizations         #
 ################################################
-
 
 def create_aws_ous_accounts(
     organizations_client: boto3.client,
