@@ -1,8 +1,11 @@
 import os
 import json
+import ulid
 import moto
 import boto3
 import pytest
+
+from tests.unit.utils import create_table
 from src.app.lib.utils import generate_lambda_context
 
 ################################################
@@ -185,3 +188,40 @@ def setup_identity_store(
 ################################################
 #              Fixtures - DynamoDB             #
 ################################################
+
+@pytest.fixture(scope="session")
+def load_assignment_rules() -> dict:
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    organizations_map_path = os.path.join(cwd, "./configs/aws_assignment_rules.json")
+    with open(organizations_map_path, "r") as fp:
+        return json.load(fp)
+
+@pytest.fixture(scope="session")
+def dynamodb_client():
+    """
+    Fixture to mock DynamoDB
+    """
+    with moto.mock_dynamodb():
+        yield boto3.resource("dynamodb")
+
+@pytest.fixture(scope="session")
+def setup_dynamodb(
+    dynamodb_client: boto3.resource,
+    load_assignment_rules: dict
+):
+    """
+    Fixture to create DynamoDB table
+    """
+    ddb_table_name = os.getenv("DDB_TABLE_NAME")
+    create_table(table_name=ddb_table_name, primary_key="pk", secondary_key="sk")
+    
+    # Write data to table
+    ddb_table = dynamodb_client.Table(ddb_table_name)
+    for item in load_assignment_rules["rbac_definitions"]:
+        item["sk"] = f"{item['pk']}_{str(ulid.new())}"
+        ddb_table.put_item(Item=item)
+
+    return {
+        "dynamodb_client": dynamodb_client,
+        "rbac_definitions": load_assignment_rules["rbac_definitions"]
+    }
