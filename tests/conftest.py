@@ -109,11 +109,9 @@ def setup_aws_organization(load_organization_definition, organizations_client) -
         "aws_organization_definitions": aws_organization_definitions
     }
 
-
 ################################################
 #        Fixtures - AWS Identity Center        #
 ################################################
-
 
 @pytest.fixture(scope="session")
 def identity_store_client() -> boto3.client:
