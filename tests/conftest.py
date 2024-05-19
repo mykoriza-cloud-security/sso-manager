@@ -137,6 +137,13 @@ def load_sso_groups_definitions() -> dict:
         return json.load(fp)
 
 @pytest.fixture(scope="session")
+def load_sso_users_definitions() -> dict:
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    load_sso_users_definitions_path = os.path.join(cwd, "./configs/aws_sso_users_details.json")
+    with open(load_sso_users_definitions_path, "r") as fp:
+        return json.load(fp)
+
+@pytest.fixture(scope="session")
 def load_permission_sets_definitions() -> dict:
     cwd = os.path.dirname(os.path.realpath(__file__))
     load_permission_sets_definitions_path = os.path.join(cwd, "./configs/aws_permission_set_details.json")
@@ -148,6 +155,7 @@ def setup_identity_store(
     identity_store_client: boto3.client,
     sso_admin_client: boto3.client,
     load_sso_groups_definitions: dict,
+    load_sso_users_definitions: dict,
     load_permission_sets_definitions: dict,
 ):
 
@@ -158,6 +166,17 @@ def setup_identity_store(
             IdentityStoreId=identity_store_id,
             DisplayName=group["name"],
             Description=group["description"]
+        )
+    
+    # Create SSO users
+    identity_store_id = os.getenv("IDENTITY_STORE_ID")
+    for user in load_sso_users_definitions["sso_users_definitions"]:
+        identity_store_client.create_user(
+            IdentityStoreId=identity_store_id,
+            UserName=user["username"],
+            DisplayName=user["name"]["Formatted"],
+            Name=user["name"],
+            Emails=user["email"]
         )
 
     # Create permission sets
@@ -172,6 +191,7 @@ def setup_identity_store(
     return {
         "identity_store_client": identity_store_client,
         "sso_admin_client": sso_admin_client,
+        "sso_users_definitions": load_sso_users_definitions["sso_users_definitions"],
         "sso_groups_definitions": load_sso_groups_definitions["sso_groups_definitions"],
         "permission_sets_definitions": load_permission_sets_definitions["permission_sets_definitions"]
     }

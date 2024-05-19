@@ -16,6 +16,7 @@ from aws_lambda_powertools.utilities.data_classes import EventBridgeEvent, event
 from .lib.aws_dynamodb import DDB
 from .lib.aws_organizations import AwsOrganizations
 from .lib.aws_identitystore import AwsIdentityStore
+from .lib.aws_sso_resolver import RbacResolver
 
 # Env vars
 LOG_LEVEL = os.getenv("LOG_LEVEL")
@@ -33,6 +34,7 @@ LOGGER = Logger(service=TRACER_SERVICE_NAME, level=LOG_LEVEL)
 py_ddb = DDB(DDB_TABLE_NAME)
 py_aws_organizations = AwsOrganizations(ROOT_OU_ID)
 py_aws_identitycenter = AwsIdentityStore(IDENTITY_STORE_ID, IDENTITY_STORE_ARN)
+py_aws_rbac_resolver = RbacResolver()
 
 
 # Lambda Routes
@@ -47,16 +49,26 @@ def put_rbac_sso_assignments():
     active_aws_accounts = list(itertools.chain(*aws_organizational_map.values()))
 
     # Get SSO groups & permission sets
-    sso_groups = py_aws_identitycenter.list_sso_groups()
+    aws_sso_groups = py_aws_identitycenter.list_sso_groups()
     permission_sets = py_aws_identitycenter.list_permission_sets()
-    assignment_rules = py_ddb.batch_query_items(key = "IMPLICIT", range_begins_with="IMPLICIT_")
 
-    return {
-        "active_aws_accounts": active_aws_accounts,
-        "sso_groups": sso_groups,
-        "permission_sets": permission_sets,
-        "assignment_rules": assignment_rules,
-    }
+    # Get SSO assignment rules
+    sso_assignment_rules = py_ddb.batch_query_items(key = "RULES", range_begins_with="RULE_")
+
+    # Create SSO assignment
+    py_aws_rbac_resolver.create_assignments_mapping(
+        aws_accounts = active_aws_accounts,
+        sso_groups = aws_sso_groups,
+        permission_sets = permission_sets,
+        assignment_rules = sso_assignment_rules
+    )
+
+    # return {
+    #     "active_aws_accounts": active_aws_accounts,
+    #     "sso_groups": sso_groups,
+    #     "permission_sets": permission_sets,
+    #     "assignment_rules": assifgnment_rules,
+    # }
 
 
 # Lambda handler

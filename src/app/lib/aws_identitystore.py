@@ -15,6 +15,9 @@ class AwsIdentityStore:
         self._identity_store_arn = identity_store_arn
 
         self._identity_store_client = boto3.client("identitystore")
+        self._sso_users_pagniator = self._identity_store_client.get_paginator(
+            "list_users"
+        )
         self._sso_groups_pagniator = self._identity_store_client.get_paginator(
             "list_groups"
         )
@@ -31,6 +34,19 @@ class AwsIdentityStore:
         return list(
             itertools.chain.from_iterable(
                 (page["Groups"] for page in aws_identitystore_groups_iterator)
+            )
+        )
+
+    def list_sso_users(self):
+        """
+        Method to list all the users in the identity store.
+        """
+        aws_identitystore_users_iterator = self._sso_users_pagniator.paginate(
+            IdentityStoreId=self._identity_store_id
+        )
+        return list(
+            itertools.chain.from_iterable(
+                (page["Users"] for page in aws_identitystore_users_iterator)
             )
         )
 

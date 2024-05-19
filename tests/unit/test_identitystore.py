@@ -47,6 +47,22 @@ def test_list_sso_groups(setup_identity_store: pytest.fixture) -> None:
     assert len(sso_groups) == len(sso_groups_definitions)
 
 
+def test_list_users(setup_identity_store: pytest.fixture) -> None:
+    """
+    Test list SSO groups
+    """
+    # Arrange
+    identity_store_id = os.getenv("IDENTITY_STORE_ID")
+    identity_store_arn = os.getenv("IDENTITY_STORE_ARN")
+    users_definitions = setup_identity_store["sso_users_definitions"]
+    py_aws_sso = AwsIdentityStore(identity_store_id, identity_store_arn)
+
+    # Act
+    users = py_aws_sso.list_sso_users()
+
+    # Assert
+    assert len(users) == len(users_definitions)
+
 # def test_list_permission_sets(permission_set_definitions: dict, create_sso_groups: NoReturn) -> None:
 #     """
 #     Test list SSO groups
