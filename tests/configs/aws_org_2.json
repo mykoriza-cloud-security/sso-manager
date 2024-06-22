@@ -1,0 +1,98 @@
+{
+    "aws_organizations": [
+        {
+            "name": "dev",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_dev",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_dev",
+                    "type": "ACCOUNT"
+                }
+            ]
+        },
+        {
+            "name": "test",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_test",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_test",
+                    "type": "ACCOUNT"
+                }
+            ]
+        },
+        {
+            "name": "prod",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_prod",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_prod",
+                    "type": "ACCOUNT"
+                }
+            ]
+        },
+        {
+            "name": "suspended",
+            "type": "ORGANIZATIONAL_UNIT",
+            "children": [
+                {
+                    "name": "workload_1_suspended",
+                    "type": "ACCOUNT"
+                },
+                {
+                    "name": "workload_2_suspended",
+                    "type": "ACCOUNT"
+                }
+            ]
+        }
+    ],
+    "permission_sets": [
+        {
+            "name": "Administration",
+            "description": "Administration permission set"
+        },
+        {
+            "name": "PowerUser",
+            "description": "PowerUser permission set"
+        },
+        {
+            "name": "ReadOnly",
+            "description": "ReadOnly permission set"
+        },
+        {
+            "name": "ViewOnly",
+            "description": "ViewOnly permission set"
+        }
+    ],
+    "sso_groups": [
+        {
+            "type": "group",
+            "name": "group_org2_1",
+            "description": "group1 description",
+            "members": [
+                "user1@testing.com",
+                "user2@testing.com"
+            ]
+        },
+        {
+            "type": "group",
+            "name": "group_org2_2",
+            "description": "group2 description",
+            "members": [
+                "user1@testing.com",
+                "user2@testing.com"
+            ]
+        }
+    ]
+}

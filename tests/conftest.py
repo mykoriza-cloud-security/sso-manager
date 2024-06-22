@@ -1,36 +1,15 @@
+################################################
+#                    Imports                   #
+################################################
+
 import os
 import json
-import ulid
 import moto
 import boto3
 import pytest
 
-from tests.unit.utils import create_table
-
 ################################################
-#         Fixtures - AWS Env & Env Vars        #
-################################################
-
-@pytest.fixture(scope="session", autouse=True)
-def set_aws_creds():
-    monkeypatch = pytest.MonkeyPatch()
-    monkeypatch.setenv("AWS_REGION", "us-east-1")
-    monkeypatch.setenv("AWS_SESSION_TOKEN", "test")
-    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test")
-    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "test")
-    yield
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_env_vars():
-    monkeypatch = pytest.MonkeyPatch()
-    monkeypatch.setenv("LOG_LEVEL", "INFO")
-    monkeypatch.setenv("DDB_TABLE_NAME", "cloud_pass")
-    monkeypatch.setenv("IDENTITY_STORE_ID", "d-1234567890")
-    monkeypatch.setenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
-    yield
-
-################################################
-#         Fixtures - AWS organizations         #
+#               Helper functions               #
 ################################################
 
 def create_aws_ous_accounts(
@@ -75,13 +54,63 @@ def create_aws_ous_accounts(
                 DestinationParentId=parent_ou_id,
             )
 
+def delete_aws_ous_accounts(
+    organizations_client: boto3.client,
+    root_ou_id: str,
+    parent_ou_id: str = ""
+) -> None:
+    """
+    Recursively delete AWS accounts from nested organizational units (OUs).
+    """
+    # Function to delete accounts in the current OU
+    def delete_accounts_in_ou(ou_id: str) -> None:
+        accounts_to_delete = organizations_client.list_accounts_for_parent(ParentId=ou_id)["Accounts"]
+        for account in accounts_to_delete:
+            organizations_client.remove_account_from_organization(
+                AccountId=account["Id"]
+            )
 
-@pytest.fixture(scope="session")
-def load_organization_definition() -> dict:
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    organizations_map_path = os.path.join(cwd, "./configs/aws_organizations_details.json")
-    with open(organizations_map_path, "r") as fp:
-        return json.load(fp)
+    # Function to recursively delete accounts in child OUs
+    def delete_accounts_in_child_ous(parent_id: str) -> None:
+        child_ous_paginator = organizations_client.get_paginator("list_children")
+        for page in child_ous_paginator.paginate(ParentId=parent_id, ChildType="ORGANIZATIONAL_UNIT"):
+            for child in page.get("Children", []):
+                delete_accounts_in_ou(child["Id"])
+                delete_accounts_in_child_ous(child["Id"])
+
+    # Delete accounts in the root or specified parent OU
+    if parent_ou_id:
+        delete_accounts_in_ou(parent_ou_id)
+        delete_accounts_in_child_ous(parent_ou_id)
+    else:
+        delete_accounts_in_ou(root_ou_id)
+        delete_accounts_in_child_ous(root_ou_id)
+
+################################################
+#         Fixtures - AWS Env & Env Vars        #
+################################################
+
+@pytest.fixture(scope="session", autouse=True)
+def set_aws_creds():
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.setenv("AWS_SESSION_TOKEN", "test")
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "test")
+    yield
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_env_vars():
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("LOG_LEVEL", "INFO")
+    monkeypatch.setenv("DDB_TABLE_NAME", "cloud_pass")
+    monkeypatch.setenv("IDENTITY_STORE_ID", "d-1234567890")
+    monkeypatch.setenv("IDENTITY_STORE_ARN", "arn:aws:sso:::instance/ssoins-instanceId")
+    yield
+
+################################################
+#          Fixtures - Setup AWS clients        #
+################################################
 
 @pytest.fixture(scope="session")
 def organizations_client() -> boto3.client:
@@ -90,28 +119,6 @@ def organizations_client() -> boto3.client:
     """
     with moto.mock_organizations():
         yield boto3.client("organizations")
-
-@pytest.fixture(scope="session")
-def setup_aws_organization(load_organization_definition, organizations_client) -> dict:
-
-    # Create AWS organization
-    organizations_client.create_organization()
-    root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
-
-    # Create AWS OUs & accounts
-    aws_organization_definitions = load_organization_definition["organization_definition"]
-    create_aws_ous_accounts(organizations_client, aws_organization_definitions, root_ou_id)
-    
-    # Return AWS organization details
-    return {
-        "root_ou_id": root_ou_id,
-        "aws_organizations_client": organizations_client,
-        "aws_organization_definitions": aws_organization_definitions
-    }
-
-################################################
-#        Fixtures - AWS Identity Center        #
-################################################
 
 @pytest.fixture(scope="session")
 def identity_store_client() -> boto3.client:
@@ -129,110 +136,85 @@ def sso_admin_client() -> boto3.client:
     with moto.mock_ssoadmin():
         yield boto3.client("sso-admin")
 
-@pytest.fixture(scope="session")
-def load_sso_groups_definitions() -> dict:
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    load_sso_groups_definitions_path = os.path.join(cwd, "./configs/aws_sso_groups_details.json")
-    with open(load_sso_groups_definitions_path, "r") as fp:
-        return json.load(fp)
+################################################
+#         Fixtures - AWS organizations         #
+################################################
 
 @pytest.fixture(scope="session")
-def load_sso_users_definitions() -> dict:
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    load_sso_users_definitions_path = os.path.join(cwd, "./configs/aws_sso_users_details.json")
-    with open(load_sso_users_definitions_path, "r") as fp:
-        return json.load(fp)
-
-@pytest.fixture(scope="session")
-def load_permission_sets_definitions() -> dict:
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    load_permission_sets_definitions_path = os.path.join(cwd, "./configs/aws_permission_set_details.json")
-    with open(load_permission_sets_definitions_path, "r") as fp:
-        return json.load(fp)
-
-@pytest.fixture(scope="session")
-def setup_identity_store(
+def setup_aws_environment(
+    request: str,
+    organizations_client: boto3.client,
     identity_store_client: boto3.client,
-    sso_admin_client: boto3.client,
-    load_sso_groups_definitions: dict,
-    load_sso_users_definitions: dict,
-    load_permission_sets_definitions: dict,
-):
+    sso_admin_client: boto3.client
+) -> dict:
+    # Load parameter from pytest marker or fixture definition
+    param_value = request.param
 
-    # Create SSO groups
+    # Load env vars
     identity_store_id = os.getenv("IDENTITY_STORE_ID")
-    for group in load_sso_groups_definitions["sso_groups_definitions"]:
-        identity_store_client.create_group(
-            IdentityStoreId=identity_store_id,
-            DisplayName=group["name"],
-            Description=group["description"]
-        )
-    
-    # Create SSO users
-    identity_store_id = os.getenv("IDENTITY_STORE_ID")
-    for user in load_sso_users_definitions["sso_users_definitions"]:
-        identity_store_client.create_user(
-            IdentityStoreId=identity_store_id,
-            UserName=user["username"],
-            DisplayName=user["name"]["Formatted"],
-            Name=user["name"],
-            Emails=user["email"]
-        )
-
-    # Create permission sets
     identity_store_arn = os.getenv("IDENTITY_STORE_ARN")
-    for permission_set in load_permission_sets_definitions["permission_sets_definitions"]:
-        sso_admin_client.create_permission_set(
-            InstanceArn=identity_store_arn,
-            Name=permission_set["name"],
-            Description=permission_set["description"]
-        )
-    
-    return {
-        "identity_store_client": identity_store_client,
-        "sso_admin_client": sso_admin_client,
-        "sso_users_definitions": load_sso_users_definitions["sso_users_definitions"],
-        "sso_groups_definitions": load_sso_groups_definitions["sso_groups_definitions"],
-        "permission_sets_definitions": load_permission_sets_definitions["permission_sets_definitions"]
-    }
 
-################################################
-#              Fixtures - DynamoDB             #
-################################################
-
-@pytest.fixture(scope="session")
-def load_assignment_rules() -> dict:
+    # Load JSON definitions
     cwd = os.path.dirname(os.path.realpath(__file__))
-    organizations_map_path = os.path.join(cwd, "./configs/aws_assignment_rules.json")
-    with open(organizations_map_path, "r") as fp:
-        return json.load(fp)
-
-@pytest.fixture(scope="session")
-def dynamodb_client():
-    """
-    Fixture to mock DynamoDB
-    """
-    with moto.mock_dynamodb():
-        yield boto3.resource("dynamodb")
-
-@pytest.fixture(scope="session")
-def setup_dynamodb(
-    dynamodb_client: boto3.resource,
-    load_assignment_rules: dict
-):
-    """
-    Fixture to create DynamoDB table
-    """
-    ddb_table_name = os.getenv("DDB_TABLE_NAME")
-    create_table(table_name=ddb_table_name, primary_key="pk", secondary_key="sk")
+    organizations_map_path = os.path.join(cwd, "configs", param_value)
+    with open(organizations_map_path) as fp:
+        aws_environment_details = json.load(fp)
     
-    # Write data to table
-    ddb_table = dynamodb_client.Table(ddb_table_name)
-    for item in load_assignment_rules["rbac_definitions"]:
-        item["sk"] = f"{item['pk']}_{str(ulid.new())}"
-        ddb_table.put_item(Item=item)
+    aws_organizations_definitions = aws_environment_details.get("aws_organizations", [])
+    permission_set_definitions = aws_environment_details.get("permission_sets", [])
+    sso_users = aws_environment_details.get("sso_users", [])
+    sso_groups = aws_environment_details.get("sso_groups", [])
 
-    return {
-        "dynamodb_client": dynamodb_client,
-        "rbac_definitions": load_assignment_rules["rbac_definitions"]
-    }
+    # Setup AWS organizations
+    root_ou_id = None
+    try:
+        organizations_client.create_organization()
+        root_ou_id = organizations_client.list_roots()["Roots"][0]["Id"]
+        create_aws_ous_accounts(
+            organizations_client = organizations_client,
+            aws_organization_definitions = aws_organizations_definitions,
+            root_ou_id = root_ou_id
+        )
+
+        # Setup AWS Identity center
+        for user in sso_users:
+            identity_store_client.create_user(
+                IdentityStoreId=identity_store_id,
+                UserName=user["username"],
+                DisplayName=user["name"]["Formatted"],
+                Name=user["name"],
+                Emails=user["email"]
+            )
+
+        for group in sso_groups:
+            identity_store_client.create_group(
+                IdentityStoreId=identity_store_id,
+                DisplayName=group["name"],
+                Description=group["description"]
+            )
+
+        for permission_set in permission_set_definitions:
+            sso_admin_client.create_permission_set(
+                InstanceArn=identity_store_arn,
+                Name=permission_set["name"],
+                Description=permission_set["description"]
+            )
+
+        yield {
+            "root_ou_id": root_ou_id,
+            "aws_organization_definitions": aws_organizations_definitions,
+            "aws_sso_group_definitions": sso_groups,
+            "aws_sso_user_definitions": sso_users,
+            "aws_permission_set_definitions": permission_set_definitions
+        }
+    finally:
+        # Teardown logic
+        if root_ou_id:
+            # Remove AWS accounts from organization
+            delete_aws_ous_accounts(
+                organizations_client = organizations_client,
+                root_ou_id = root_ou_id
+            )
+
+            # Delete AWS resources or undo changes as needed
+            organizations_client.delete_organization(OrganizationId=root_ou_id)
