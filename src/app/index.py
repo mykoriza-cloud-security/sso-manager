@@ -13,14 +13,12 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.utilities.data_classes import EventBridgeEvent, event_source
 
 # Local package & layer imports
-from .lib.aws_dynamodb import DDB
 from .lib.aws_organizations import AwsOrganizations
 from .lib.aws_identitystore import AwsIdentityStore
 from .lib.aws_sso_resolver import RbacResolver
 
 # Env vars
 LOG_LEVEL = os.getenv("LOG_LEVEL")
-DDB_TABLE_NAME = os.getenv("DDB_TABLE_NAME")
 TRACER_SERVICE_NAME = os.getenv("TRACER_SERVICE_NAME")
 
 ROOT_OU_ID = os.getenv("ROOT_OU_ID")
@@ -31,7 +29,6 @@ IDENTITY_STORE_ARN = os.getenv("IDENTITY_STORE_ARN")
 TRACER = Tracer(service=TRACER_SERVICE_NAME)
 LOGGER = Logger(service=TRACER_SERVICE_NAME, level=LOG_LEVEL)
 
-py_ddb = DDB(DDB_TABLE_NAME)
 py_aws_organizations = AwsOrganizations(ROOT_OU_ID)
 py_aws_identitycenter = AwsIdentityStore(IDENTITY_STORE_ID, IDENTITY_STORE_ARN)
 py_aws_rbac_resolver = RbacResolver()
