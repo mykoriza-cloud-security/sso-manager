@@ -53,14 +53,16 @@ def put_rbac_sso_assignments():
     permission_sets = py_aws_identitycenter.list_permission_sets()
 
     # Get SSO assignment rules
-    sso_assignment_rules = py_ddb.batch_query_items(key = "RULES", range_begins_with="RULE_")
+    sso_assignment_rules = py_ddb.batch_query_items(
+        key="RULES", range_begins_with="RULE_"
+    )
 
     # Create SSO assignment
     py_aws_rbac_resolver.create_assignments_mapping(
-        aws_accounts = active_aws_accounts,
-        sso_groups = aws_sso_groups,
-        permission_sets = permission_sets,
-        assignment_rules = sso_assignment_rules
+        aws_accounts=active_aws_accounts,
+        sso_groups=aws_sso_groups,
+        permission_sets=permission_sets,
+        assignment_rules=sso_assignment_rules,
     )
 
     # return {
@@ -97,7 +99,7 @@ def lambda_handler(event: EventBridgeEvent, context: LambdaContext):
         - body: contains stringified response of lambda function
         - statusCode: contains HTTP status code
     """
-    # return 
+    # return
     return Response(
         status_code=HTTPStatus.OK.value,
         content_type=content_types.APPLICATION_JSON,

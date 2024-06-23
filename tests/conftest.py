@@ -4,6 +4,7 @@
 
 import os
 import json
+import itertools
 import moto
 import boto3
 import pytest
@@ -218,3 +219,33 @@ def setup_aws_environment(
 
             # Delete AWS resources or undo changes as needed
             organizations_client.delete_organization(OrganizationId=root_ou_id)
+
+            # Delete SSO users
+            sso_users_paginator = identity_store_client.get_paginator("list_users")
+            sso_users_iterator = sso_users_paginator.paginate(IdentityStoreId=identity_store_id)
+            sso_users = list(itertools.chain.from_iterable((page["Users"] for page in sso_users_iterator)))
+            for user in sso_users:
+                identity_store_client.delete_user(
+                    IdentityStoreId = identity_store_arn,
+                    UserId=user["UserId"]
+                )
+
+            # Delete SSO groups
+            sso_groups_paginator = identity_store_client.get_paginator("list_groups")
+            sso_groups_iterator = sso_groups_paginator.paginate(IdentityStoreId=identity_store_id)
+            sso_groups = list(itertools.chain.from_iterable((page["Groups"] for page in sso_groups_iterator)))
+            for group in sso_groups:
+                identity_store_client.delete_group(
+                    IdentityStoreId = identity_store_arn,
+                    GroupId=group["GroupId"]
+                )
+            
+            # Delete permission sets
+            permission_sets_paginator = sso_admin_client.get_paginator("list_permission_sets")
+            permission_sets_iterator = permission_sets_paginator.paginate(InstanceArn=identity_store_arn)
+            permission_sets = list(itertools.chain.from_iterable((page["PermissionSets"] for page in permission_sets_iterator)))
+            for permission_set in permission_sets:
+                sso_admin_client.delete_permission_set(
+                    InstanceArn = identity_store_arn,
+                    PermissionSetArn=permission_set
+                )

@@ -78,7 +78,7 @@
     "sso_groups": [
         {
             "type": "group",
-            "name": "group_org2_1",
+            "name": "group1",
             "description": "group1 description",
             "members": [
                 "user1@testing.com",
@@ -87,7 +87,7 @@
         },
         {
             "type": "group",
-            "name": "group_org2_2",
+            "name": "group2",
             "description": "group2 description",
             "members": [
                 "user1@testing.com",

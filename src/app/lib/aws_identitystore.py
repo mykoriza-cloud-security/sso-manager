@@ -15,20 +15,20 @@ class AwsIdentityStore:
         self._identity_store_arn = identity_store_arn
 
         self._identity_store_client = boto3.client("identitystore")
-        self._sso_users_pagniator = self._identity_store_client.get_paginator(
+        self._sso_users_paginator = self._identity_store_client.get_paginator(
             "list_users"
         )
-        self._sso_groups_pagniator = self._identity_store_client.get_paginator(
+        self._sso_groups_paginator = self._identity_store_client.get_paginator(
             "list_groups"
         )
 
         self._sso_admin_client = boto3.client("sso-admin")
-        self._permission_sets_pagniator = self._sso_admin_client.get_paginator(
+        self._permission_sets_paginator = self._sso_admin_client.get_paginator(
             "list_permission_sets"
         )
 
     def list_sso_groups(self):
-        aws_identitystore_groups_iterator = self._sso_groups_pagniator.paginate(
+        aws_identitystore_groups_iterator = self._sso_groups_paginator.paginate(
             IdentityStoreId=self._identity_store_id
         )
         return list(
@@ -41,7 +41,7 @@ class AwsIdentityStore:
         """
         Method to list all the users in the identity store.
         """
-        aws_identitystore_users_iterator = self._sso_users_pagniator.paginate(
+        aws_identitystore_users_iterator = self._sso_users_paginator.paginate(
             IdentityStoreId=self._identity_store_id
         )
         return list(
@@ -54,7 +54,7 @@ class AwsIdentityStore:
         """
         Method to list permission sets and remove sensitive information.
         """
-        aws_permission_sets_iterator = self._permission_sets_pagniator.paginate(
+        aws_permission_sets_iterator = self._permission_sets_paginator.paginate(
             InstanceArn=self._identity_store_arn
         )
         return list(

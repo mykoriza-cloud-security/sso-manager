@@ -19,7 +19,7 @@ env:
 # Automated Testing
 unittest:
 	@echo "Running unit tests"
-	@pytest -s -v
+	@pytest -v -s -n auto
 
 # Formatting & Linting
 format:
