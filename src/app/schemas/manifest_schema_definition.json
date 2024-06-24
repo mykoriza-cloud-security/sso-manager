@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ignore": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "target_type": {
+            "$ref": "#/$defs/target_type"
+          },
+          "target_names": {
+            "$ref": "#/$defs/target_names"
+          },
+          "nested": {
+            "$ref": "#/$defs/nested"
+          }
+        },
+        "required": ["target_type", "target_names"],
+        "dependencies": {
+          "nested": {
+            "oneOf": [
+              {
+                "properties": {
+                  "target_type": {
+                    "enum": ["OU"]
+                  }
+                }
+              },
+              {
+                "not": {
+                  "properties": {
+                    "target_type": {
+                      "enum": ["OU"]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "target_type": {
+            "$ref": "#/$defs/target_type"
+          },
+          "access_type": {
+            "$ref": "#/$defs/access_type"
+          },
+          "target_names": {
+            "$ref": "#/$defs/target_names"
+          },
+          "nested": {
+            "$ref": "#/$defs/nested"
+          },
+          "permission_set_names": {
+            "$ref": "#/$defs/permission_set_names"
+          },
+          "principal_name": {
+            "$ref": "#/$defs/principal_name"
+          }
+        },
+        "required": ["target_type", "access_type", "target_names", "permission_set_names", "principal_name"],
+        "dependencies": {
+          "nested": {
+            "oneOf": [
+              {
+                "properties": {
+                  "target_type": {
+                    "enum": ["OU"]
+                  }
+                }
+              },
+              {
+                "not": {
+                  "properties": {
+                    "target_type": {
+                      "enum": ["OU"]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": ["rules"],
+  "$defs": {
+    "target_type": {
+      "type": "string",
+      "enum": ["OU", "ACT"]
+    },
+    "target_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "access_type": {
+      "type": "string",
+      "enum": ["RBAC", "ABAC", "JIIT"]
+    },
+    "nested": {
+      "type": "boolean",
+      "default": false
+    },
+    "permission_set_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "principal_name": {
+      "type": "string"
+    }
+  }
+}
