@@ -71,6 +71,12 @@
                     },
                     "principal_name": {
                         "$ref": "#/$defs/principal_name"
+                    },
+                    "principal_type": {
+                        "$ref": "#/$defs/principal_type"
+                    },
+                    "rule_type": {
+                        "$ref": "#/$defs/rule_type"
                     }
                 },
                 "required": [
@@ -78,7 +84,8 @@
                     "access_type",
                     "target_names",
                     "permission_set_name",
-                    "principal_name"
+                    "principal_name",
+                    "principal_type"
                 ],
                 "dependencies": {
                     "nested": {
@@ -143,6 +150,21 @@
         },
         "principal_name": {
             "type": "string"
+        },
+        "principal_type": {
+            "type": "string",
+            "enum": [
+                "GROUP",
+                "USER"
+            ]
+        },
+        "rule_type": {
+            "type": "string",
+            "enum": [
+                "EXPLICIT",
+                "IMPLICIT"
+            ],
+            "default": "EXPLICIT"
         }
     }
 }
