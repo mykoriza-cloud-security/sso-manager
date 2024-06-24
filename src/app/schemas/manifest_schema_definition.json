@@ -66,8 +66,8 @@
                     "nested": {
                         "$ref": "#/$defs/nested"
                     },
-                    "permission_set_names": {
-                        "$ref": "#/$defs/permission_set_names"
+                    "permission_set_name": {
+                        "$ref": "#/$defs/permission_set_name"
                     },
                     "principal_name": {
                         "$ref": "#/$defs/principal_name"
@@ -77,7 +77,7 @@
                     "target_type",
                     "access_type",
                     "target_names",
-                    "permission_set_names",
+                    "permission_set_name",
                     "principal_name"
                 ],
                 "dependencies": {
@@ -138,7 +138,7 @@
             "type": "boolean",
             "default": false
         },
-        "permission_set_names": {
+        "permission_set_name": {
             "type": "string"
         },
         "principal_name": {
