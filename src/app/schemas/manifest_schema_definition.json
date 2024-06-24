@@ -21,32 +21,11 @@
                     "target_type",
                     "target_names"
                 ],
-                "dependencies": {
-                    "nested": {
-                        "oneOf": [
-                            {
-                                "properties": {
-                                    "target_type": {
-                                        "enum": [
-                                            "OU"
-                                        ]
-                                    }
-                                }
-                            },
-                            {
-                                "not": {
-                                    "properties": {
-                                        "target_type": {
-                                            "enum": [
-                                                "OU"
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ]
+                "allOf": [
+                    {
+                        "$ref": "#/$defs/nested_dependency"
                     }
-                }
+                ]
             }
         },
         "rules": {
@@ -87,32 +66,11 @@
                     "principal_name",
                     "principal_type"
                 ],
-                "dependencies": {
-                    "nested": {
-                        "oneOf": [
-                            {
-                                "properties": {
-                                    "target_type": {
-                                        "enum": [
-                                            "OU"
-                                        ]
-                                    }
-                                }
-                            },
-                            {
-                                "not": {
-                                    "properties": {
-                                        "target_type": {
-                                            "enum": [
-                                                "OU"
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ]
+                "allOf": [
+                    {
+                        "$ref": "#/$defs/nested_dependency"
                     }
-                }
+                ]
             }
         }
     },
@@ -165,6 +123,34 @@
                 "IMPLICIT"
             ],
             "default": "EXPLICIT"
+        },
+        "nested_dependency": {
+            "dependencies": {
+                "nested": {
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "target_type": {
+                                    "enum": [
+                                        "OU"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "not": {
+                                "properties": {
+                                    "target_type": {
+                                        "enum": [
+                                            "OU"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         }
     }
 }
