@@ -8,7 +8,7 @@ class SsoManifest:
 
     Attributes:
     ----------
-    _manifest_definition : dict
+    manifest_definition : dict
         The manifest file content.
     _schema_definition : dict
         The schema definition to validate the manifest file against.
@@ -30,8 +30,11 @@ class SsoManifest:
         schema_definition_filepath : str
             Path to the JSON schema definition file.
         """
-        self._manifest_definition = self._load_yaml_file(manifest_definition_filepath)
+        self.manifest_definition = self._load_yaml_file(manifest_definition_filepath)
         self._schema_definition = self._load_json_file(schema_definition_filepath)
+
+        # validate manifest against schema
+        self._is_valid()
 
     def _load_yaml_file(self, filepath: str) -> dict:
         """Loads a YAML file and returns its content as a dictionary."""
@@ -59,7 +62,7 @@ class SsoManifest:
         else:
             return item
 
-    def is_valid(self) -> None:
+    def _is_valid(self) -> None:
         """
         Validates the manifest definition against the schema definition.
 
@@ -69,6 +72,6 @@ class SsoManifest:
             True if the manifest is valid, raises jsonschema.ValidationError otherwise.
         """
         try:
-            jsonschema.validate(instance=self._manifest_definition, schema=self._schema_definition)
+            jsonschema.validate(instance=self.manifest_definition, schema=self._schema_definition)
         except jsonschema.ValidationError as e:
             raise jsonschema.ValidationError(f"Validation error: {e.message}")
