@@ -157,7 +157,7 @@ def setup_aws_environment(
 
     # Load JSON definitions
     cwd = os.path.dirname(os.path.realpath(__file__))
-    organizations_map_path = os.path.join(cwd, "configs", param_value)
+    organizations_map_path = os.path.join(cwd, "configs", "organizations", param_value)
     with open(organizations_map_path) as fp:
         aws_environment_details = json.load(fp)
     

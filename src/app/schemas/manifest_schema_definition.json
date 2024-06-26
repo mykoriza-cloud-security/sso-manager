@@ -81,8 +81,8 @@
         "target_type": {
             "type": "string",
             "enum": [
-                "OU",
-                "ACT"
+                "ou",
+                "act"
             ]
         },
         "target_names": {
@@ -94,9 +94,9 @@
         "access_type": {
             "type": "string",
             "enum": [
-                "RBAC",
-                "ABAC",
-                "JIIT"
+                "rbac",
+                "abac",
+                "jiit"
             ]
         },
         "nested": {
@@ -112,17 +112,17 @@
         "principal_type": {
             "type": "string",
             "enum": [
-                "GROUP",
-                "USER"
+                "group",
+                "user"
             ]
         },
         "rule_type": {
             "type": "string",
             "enum": [
-                "EXPLICIT",
-                "IMPLICIT"
+                "explicit",
+                "implicit"
             ],
-            "default": "EXPLICIT"
+            "default": "explicit"
         },
         "nested_dependency": {
             "dependencies": {
@@ -132,19 +132,8 @@
                             "properties": {
                                 "target_type": {
                                     "enum": [
-                                        "OU"
+                                        "ou"
                                     ]
-                                }
-                            }
-                        },
-                        {
-                            "not": {
-                                "properties": {
-                                    "target_type": {
-                                        "enum": [
-                                            "OU"
-                                        ]
-                                    }
                                 }
                             }
                         }
