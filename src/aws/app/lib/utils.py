@@ -2,7 +2,9 @@
 Python module consisting of utils functions that are used accross
 the various python modules in this repo
 """
-import uuid
+
+import json
+import yaml
 import decimal
 import logging
 import datetime
@@ -11,6 +13,33 @@ import dataclasses
 
 LOGGER = logging.getLogger(__name__)
 
+def load_file(filepath: str) -> dict:
+    """Loads a YAML or JSON file and returns its content as a dictionary."""
+    if filepath.endswith(('.yaml', '.yml')):
+        with open(filepath, "r") as file:
+            return convert_strings_to_lowercase(yaml.safe_load(file))
+    elif filepath.endswith('.json'):
+        with open(filepath, "r") as file:
+            return json.load(file)
+    else:
+        raise ValueError("Unsupported file format. Only .yaml, .yml, and .json are supported.")
+
+
+def convert_strings_to_lowercase(self, item):
+    """
+    Recursively traverse a dictionary and convert all string values to lowercase.
+
+    :param d: Dictionary to be processed
+    :return: Dictionary with all string values converted to lowercase
+    """
+    if isinstance(item, dict):
+        return {k: self._convert_strings_to_lowercase(v) for k, v in item.items()}
+    elif isinstance(item, list):
+        return [self._convert_strings_to_lowercase(item) for item in item]
+    elif isinstance(item, str):
+        return item.lower()
+    else:
+        return item
 
 def recursive_process_dict(dict_object: dict):
     """
@@ -123,7 +152,7 @@ def generate_lambda_context():
             f"arn:aws:lambda:us-east-1:123456789101:function:{function_name}"
         )
         memory_limit_in_mb: int = 256
-        aws_request_id: str = str(uuid.uuid4())
+        aws_request_id: str = "43723370-e382-466b-848e-5400507a5e86"
         log_group_name: str = f"/aws/lambda/{function_name}"
         log_stream_name: str = "my-log-stream"
 

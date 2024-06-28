@@ -14,7 +14,7 @@ from aws_lambda_powertools.utilities.data_classes import EventBridgeEvent, event
 
 # Local package & layer imports
 from .lib.aws_organizations import AwsOrganizations
-from .lib.aws_identitystore import AwsIdentityStore
+from .lib.aws_identitycentre import AwsIdentityStore
 from .lib.aws_sso_resolver import RbacResolver
 
 # Env vars

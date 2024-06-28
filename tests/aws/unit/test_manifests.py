@@ -4,7 +4,7 @@ Unit tests to test writing regex rules from DDB
 import os
 import pytest
 import jsonschema
-from src.app.lib.sso_manifest import SsoManifest
+from src.aws.app.lib.aws_sso_resolver import AwsResolver
 
 # Globals vars
 CWD = os.path.dirname(os.path.realpath(__file__))
@@ -17,7 +17,7 @@ def test_missing_rules() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_invalid_rules_target_type() -> None:
@@ -26,7 +26,7 @@ def test_single_rule_invalid_rules_target_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rules_invalid_rules_target_type() -> None:
@@ -35,7 +35,7 @@ def test_multiple_rules_invalid_rules_target_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_invalid_rules_access_type() -> None:
@@ -44,7 +44,7 @@ def test_single_rule_invalid_rules_access_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rules_invalid_rules_access_type() -> None:
@@ -53,7 +53,7 @@ def test_multiple_rules_invalid_rules_access_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_missing_permission_set_name() -> None:
@@ -62,7 +62,7 @@ def test_single_rule_missing_permission_set_name() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rules_missing_permission_set_name() -> None:
@@ -71,7 +71,7 @@ def test_multiple_rules_missing_permission_set_name() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_missing_principal_name() -> None:
@@ -80,7 +80,7 @@ def test_single_rule_missing_principal_name() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rules_missing_principal_name() -> None:
@@ -89,7 +89,7 @@ def test_multiple_rules_missing_principal_name() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_invalid_principal_type() -> None:
@@ -98,7 +98,7 @@ def test_single_rule_invalid_principal_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rules_invalid_principal_type() -> None:
@@ -107,7 +107,7 @@ def test_multiple_rules_invalid_principal_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_invalid_rule_type() -> None:
@@ -116,7 +116,7 @@ def test_single_rule_invalid_rule_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rule_invalid_rule_type() -> None:
@@ -125,7 +125,7 @@ def test_multiple_rule_invalid_rule_type() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_single_rule_invalid_target_type_nested_combination() -> None:
@@ -134,7 +134,7 @@ def test_single_rule_invalid_target_type_nested_combination() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 
 
 def test_multiple_rules_invalid_target_type_nested_combination() -> None:
@@ -143,5 +143,5 @@ def test_multiple_rules_invalid_target_type_nested_combination() -> None:
 
     # Assert
     with pytest.raises(jsonschema.ValidationError):
-        SsoManifest(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
+        AwsResolver(manifest_definition_filepath, MANIFEST_SCHEMA_DEFINITION_FILEPATH)
 

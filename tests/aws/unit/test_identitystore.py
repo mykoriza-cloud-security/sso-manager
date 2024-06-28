@@ -3,7 +3,7 @@ Unit tests to test writing regex rules from DDB
 """
 import os
 import pytest
-from src.app.lib.aws_identitystore import AwsIdentityStore
+from src.aws.app.lib.aws_identitycentre import AwsIdentityStore
 
 
 def test_missing_constructor_identitystore_arn_parameter() -> None:

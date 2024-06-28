@@ -4,7 +4,7 @@ Unit tests to test writing regex rules from DDB
 import itertools
 import boto3
 import pytest
-from src.app.lib.aws_organizations import AwsOrganizations
+from src.aws.app.lib.aws_organizations import AwsOrganizations
 
 
 def test_missing_constructor_parameter() -> None:
