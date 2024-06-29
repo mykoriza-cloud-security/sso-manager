@@ -13,19 +13,22 @@ import dataclasses
 
 LOGGER = logging.getLogger(__name__)
 
+
 def load_file(filepath: str) -> dict:
     """Loads a YAML or JSON file and returns its content as a dictionary."""
-    if filepath.endswith(('.yaml', '.yml')):
+    if filepath.endswith((".yaml", ".yml")):
         with open(filepath, "r") as file:
             return convert_strings_to_lowercase(yaml.safe_load(file))
-    elif filepath.endswith('.json'):
+    elif filepath.endswith(".json"):
         with open(filepath, "r") as file:
             return json.load(file)
     else:
-        raise ValueError("Unsupported file format. Only .yaml, .yml, and .json are supported.")
+        raise ValueError(
+            "Unsupported file format. Only .yaml, .yml, and .json are supported."
+        )
 
 
-def convert_strings_to_lowercase(self, item):
+def convert_strings_to_lowercase(item):
     """
     Recursively traverse a dictionary and convert all string values to lowercase.
 
@@ -33,13 +36,14 @@ def convert_strings_to_lowercase(self, item):
     :return: Dictionary with all string values converted to lowercase
     """
     if isinstance(item, dict):
-        return {k: self._convert_strings_to_lowercase(v) for k, v in item.items()}
+        return {k: convert_strings_to_lowercase(v) for k, v in item.items()}
     elif isinstance(item, list):
-        return [self._convert_strings_to_lowercase(item) for item in item]
+        return [convert_strings_to_lowercase(item) for item in item]
     elif isinstance(item, str):
         return item.lower()
     else:
         return item
+
 
 def recursive_process_dict(dict_object: dict):
     """

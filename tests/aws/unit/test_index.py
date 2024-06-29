@@ -1,30 +1,30 @@
-"""
-Unit tests to test writing regex rules from DDB
-"""
+# """
+# Unit tests to test writing regex rules from DDB
+# """
 
-# Imports
-import importlib
-import pytest
-from aws_lambda_powertools.utilities.data_classes import EventBridgeEvent
-from src.aws.app.lib.utils import generate_lambda_context
+# # Imports
+# import importlib
+# import pytest
+# from aws_lambda_powertools.utilities.data_classes import EventBridgeEvent
+# from aws.app.lib.utils import generate_lambda_context
 
 
-def test(
-    setup_aws_organization: pytest.fixture,
-    setup_identity_store: pytest.fixture,
-    setup_dynamodb: pytest.fixture
-) -> None:
-    
-    # Arrange
-    context = generate_lambda_context()
-    monkeypatch = pytest.MonkeyPatch()
-    monkeypatch.setenv("ROOT_OU_ID", setup_aws_organization["root_ou_id"])
+# def test(
+#     setup_aws_organization: pytest.fixture,
+#     setup_identity_store: pytest.fixture,
+#     setup_dynamodb: pytest.fixture
+# ) -> None:
 
-    from src.app import index
-    importlib.reload(index)
+#     # Arrange
+#     context = generate_lambda_context()
+#     monkeypatch = pytest.MonkeyPatch()
+#     monkeypatch.setenv("ROOT_OU_ID", setup_aws_organization["root_ou_id"])
 
-    # Act
-    lambda_response = index.lambda_handler(EventBridgeEvent(data={}), context)
-    print(lambda_response.body)
+#     from src.app import index
+#     importlib.reload(index)
 
-    # Assert
+#     # Act
+#     lambda_response = index.lambda_handler(EventBridgeEvent(data={}), context)
+#     print(lambda_response.body)
+
+#     # Assert

@@ -1,8 +1,9 @@
 .ONESHELL:
+sources = src tests
 
-.PHONY: unittest format
 
 # Environment Setup
+.PHONY: env
 env:
 	@echo "Creating Python virtual environment"
 	@python3 -m venv .venv
@@ -17,19 +18,25 @@ env:
 	@pip3 install -r requirements.txt
 
 # Automated Testing
+.PHONY: unittest
 unittest:
 	@echo "Running unit tests"
-	@pytest -v -s -n auto
+	@pytest tests/aws/unit
 
 # Formatting & Linting
+.PHONY: format
 format:
 	@echo "Running python formatting"
-	@black ./src/
+	@black $(sources)
 
 	@echo "Running python linter"
-	@pylint ./src/
+	@pylint $(sources)
 
 # Remove cached python folders
+.PHONY: cleanup
 cleanup:
 	@echo "Remove Python Debris"
 	@pyclean . --debris --verbose
+	
+	@echo "Remove editable install artifacts"
+	@rm -rf *.egg-info

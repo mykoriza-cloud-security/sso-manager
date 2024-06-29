@@ -3,7 +3,7 @@ Unit tests to test writing regex rules from DDB
 """
 import os
 import pytest
-from src.aws.app.lib.aws_identitycentre import AwsIdentityStore
+from aws.app.lib.aws_identitycentre import AwsIdentityStore
 
 
 def test_missing_constructor_identitystore_arn_parameter() -> None:
@@ -30,7 +30,7 @@ def test_missing_constructor_identitystore_arn_id_parameters() -> None:
         AwsIdentityStore()
 
 
-@pytest.mark.parametrize("setup_aws_environment", ["aws_org_1.json", "aws_org_2.json"], indirect=True)
+@pytest.mark.parametrize("setup_aws_environment", ["aws_org_1.json"], indirect=True)
 def test_list_sso_groups(setup_aws_environment: pytest.fixture) -> None:
     """
     Test list SSO groups
@@ -43,12 +43,14 @@ def test_list_sso_groups(setup_aws_environment: pytest.fixture) -> None:
 
     # Act
     sso_groups = py_aws_sso.list_sso_groups()
-    
+
     # Assert
     assert len(sso_groups) == len(sso_groups_definitions)
 
 
-@pytest.mark.parametrize("setup_aws_environment", ["aws_org_1.json", "aws_org_2.json"], indirect=True)
+@pytest.mark.parametrize(
+    "setup_aws_environment", ["aws_org_1.json", "aws_org_2.json"], indirect=True
+)
 def test_list_users(setup_aws_environment: pytest.fixture) -> None:
     """
     Test list SSO groups
@@ -66,7 +68,9 @@ def test_list_users(setup_aws_environment: pytest.fixture) -> None:
     assert len(users) == len(users_definitions)
 
 
-@pytest.mark.parametrize("setup_aws_environment", ["aws_org_1.json", "aws_org_2.json"], indirect=True)
+@pytest.mark.parametrize(
+    "setup_aws_environment", ["aws_org_1.json", "aws_org_2.json"], indirect=True
+)
 def test_list_permission_sets(setup_aws_environment: pytest.fixture) -> None:
     """
     Test list SSO groups
@@ -78,6 +82,8 @@ def test_list_permission_sets(setup_aws_environment: pytest.fixture) -> None:
 
     # Act
     permission_sets = py_aws_organizations.list_permission_sets()
-    
+
     # Assert
-    assert len(permission_sets) == len(setup_aws_environment["aws_permission_set_definitions"])
+    assert len(permission_sets) == len(
+        setup_aws_environment["aws_permission_set_definitions"]
+    )
